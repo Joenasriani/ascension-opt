@@ -7,11 +7,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500&display=swap" rel="stylesheet">
     <style>
       body {
         margin: 0;
-        font-family: 'Montserrat', sans-serif;
+        font-family: 'Outfit', 'Avenir Next', 'Segoe UI', sans-serif;
+        font-weight: 300;
+        letter-spacing: 0.01em;
         background-color: #000;
         overflow: hidden;
         user-select: none;
@@ -21,6 +23,19 @@
         width: 100vw;
         height: 100vh;
       }
+
+      #root, #root * {
+        font-family: 'Outfit', 'Avenir Next', 'Segoe UI', sans-serif;
+      }
+      h1,h2,h3,h4 {
+        font-weight: 300;
+        letter-spacing: 0.06em;
+      }
+      button, .ui-button {
+        font-weight: 300;
+        letter-spacing: 0.04em;
+      }
+
       /* Custom Scrollbar for philosophical text */
       ::-webkit-scrollbar {
         width: 6px;
