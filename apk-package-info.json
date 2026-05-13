@@ -1,0 +1,14 @@
+{
+  "suggestedPackageId": "com.joenasr.ascensionvr",
+  "appName": "Ascension VR",
+  "launcherName": "Ascension",
+  "themeColor": "#ff7675",
+  "backgroundColor": "#dbeafe",
+  "displayMode": "fullscreen",
+  "orientation": "landscape",
+  "startUrl": "/",
+  "scope": "/",
+  "manifestPath": "/manifest.webmanifest",
+  "assetLinksPath": "/.well-known/assetlinks.json",
+  "playStoreTargetApiNote": "Google Play currently requires new apps and updates to target Android 15 / API 35 or higher for standard Android apps."
+}
