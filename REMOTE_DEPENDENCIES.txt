@@ -1,0 +1,52 @@
+Ascension VR - Remote Dependency Report
+Generated: 2026-05-14
+
+Scope:
+- Source was the provided working dist ZIP.
+- No source rebuild was performed.
+- Gameplay bundle was not modified.
+- index.html was not changed because no external dependency could be safely downloaded and verified in this execution environment.
+
+Localized successfully:
+- None. The execution environment could not resolve external CDN hosts, so no remote files were downloaded.
+
+Still remote by design or because localization could not be verified:
+1. Tailwind CDN runtime
+   URL: https://cdn.tailwindcss.com
+   Reason: download could not be completed due DNS/network resolution failure. Kept remote to avoid breaking the already working build.
+
+2. Google Fonts stylesheet
+   URL: https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;600&display=swap
+   Reason: download could not be completed due DNS/network resolution failure. Kept remote to avoid introducing an incomplete font setup.
+
+3. Google Fonts font host
+   URL: https://fonts.gstatic.com
+   Reason: required by the Google Fonts stylesheet. Not localized because the stylesheet and font files could not be fetched and verified.
+
+4. AI Studio import map modules
+   URLs:
+   - https://aistudiocdn.com/react@^19.2.0/
+   - https://aistudiocdn.com/react@^19.2.0
+   - https://aistudiocdn.com/react-dom@^19.2.0/
+   - https://aistudiocdn.com/three@^0.181.2
+   - https://aistudiocdn.com/@react-three/drei@^10.7.7
+   - https://aistudiocdn.com/@react-spring/three@^10.0.3
+   - https://aistudiocdn.com/@react-three/fiber@^9.4.0
+   Reason: intentionally kept remote because a safe recursive ESM mirror was not verified. Blindly localizing only top-level ESM modules can break nested imports.
+
+Notes:
+- Non-runtime informational URLs inside the minified JS bundle were not changed.
+- Existing local files were preserved:
+  - ./assets/index-BjuLtVzX.js
+  - ./music/thelittlehero.mp3
+  - ./index.html
+
+Smoke test performed:
+- Confirmed index.html exists.
+- Confirmed local module script target exists: ./assets/index-BjuLtVzX.js
+- Confirmed preloaded audio exists: ./music/thelittlehero.mp3
+- Confirmed no gameplay/minified JS changes were made.
+
+Recommended next step outside this restricted environment:
+- Run the same localization process in an environment with working DNS/internet access.
+- Only replace remote URLs after downloading files, rewriting font URLs, and testing the page in Chrome or itch.io HTML preview.

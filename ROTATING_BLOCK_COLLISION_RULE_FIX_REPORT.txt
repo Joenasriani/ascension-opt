@@ -1,0 +1,31 @@
+Rotating Block Collision Rule Fix
+
+Scope applied:
+- Only rotating-block interaction logic was changed.
+- No level layouts were redesigned.
+- No visuals were changed.
+- No minified game code was touched except the rotation interaction guard.
+
+Problem fixed:
+- Before this fix, a rotator could rotate into another block if its next 90-degree orientation overlapped nearby geometry.
+- That could visually merge the rotating block with static blocks, moving blocks, pillars, or other walkable blocks.
+
+Rule added:
+- Before applying a player-triggered rotation, the game now simulates the next rotation state.
+- If the rotated block would physically overlap any other block, the rotation is cancelled.
+- If the rotated block has clear space, the rotation proceeds normally.
+
+Collision logic:
+- Uses the block's current world position.
+- Uses slider-adjusted vertical position where relevant.
+- Uses the rotated block's swapped x/z footprint when rotation changes orientation.
+- Checks x, y, and z overlap with a small tolerance so touching/adjacent blocks are still allowed, but merging is blocked.
+
+Affected behavior:
+- Rotators can still rotate when the target space is clear.
+- Rotators no longer merge into surrounding blocks.
+- Player movement, level order, secret level menu, sliders, music, UI, and visuals were not changed.
+
+Validation:
+- JavaScript syntax check passed with node --check.
+- ZIP integrity check passed.

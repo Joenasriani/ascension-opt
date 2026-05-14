@@ -2,38 +2,18 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
     <title>Ascension VR</title>
-    <meta name="description" content="A minimalist philosophical 3D puzzle game about reorienting reality and ascending through impossible spaces." />
-    <meta name="theme-color" content="#ff7675" />
-    <meta name="color-scheme" content="light" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="Ascension" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="application-name" content="Ascension VR" />
-    <meta name="xr-spatial-tracking" content="allow" />
-    <link rel="manifest" href="./manifest.webmanifest" />
-    <link rel="icon" type="image/png" sizes="32x32" href="./icons/icon-32.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;600&display=swap" rel="stylesheet">
     <style>
-      html {
-        width: 100%;
-        height: 100%;
-        overscroll-behavior: none;
-      }
       body {
         margin: 0;
         font-family: 'Montserrat', sans-serif;
         background: linear-gradient(to bottom, #fce7f3, #dbeafe);
         overflow: hidden;
-        overscroll-behavior: none;
-        touch-action: none;
         user-select: none;
         -webkit-tap-highlight-color: transparent;
       }
@@ -41,7 +21,6 @@
         width: 100vw;
         height: 100vh;
         background: linear-gradient(to bottom, #fce7f3, #dbeafe);
-        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
       }
       #boot-fallback {
         position: fixed;
@@ -77,18 +56,9 @@
 </script>
   <link rel="preload" href="./music/thelittlehero.mp3" as="audio" type="audio/mpeg">
   <script type="module" crossorigin src="./assets/index-BjuLtVzX.js"></script>
+  <script defer src="./assets/qa-level-select.js"></script>
 </head>
   <body>
     <div id="root"><div id="boot-fallback"></div></div>
-
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function () {
-          navigator.serviceWorker.register('./service-worker.js').catch(function (error) {
-            console.warn('Service worker registration failed:', error);
-          });
-        });
-      }
-    </script>
 </body>
 </html>

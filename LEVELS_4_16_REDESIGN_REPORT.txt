@@ -1,0 +1,30 @@
+ASCENSION LEVELS 4-16 REDESIGN REPORT
+
+Scope followed:
+- Reworked only levels 4 through 16.
+- Preserved levels 1-3 and 17-21.
+- Preserved visual style, controls, hidden dynamic level menu, remote dependency policy, and collision guards.
+- Did not rebuild from source. Patched the existing working dist bundle level data only.
+
+Design changes:
+- Level 4: The First Lift Turn - introduces a clean lift plus bridge turn.
+- Level 5: The Bent Causeway - adds a turn before a lift and long bridge.
+- Level 6: Two-Step Ascent - adds a second elevation stage.
+- Level 7: The Quiet Switchback - introduces a readable switchback path.
+- Level 8: Folded Corner - longer route with fold-back bridge logic.
+- Level 9: The Raised Elbow - lifted corner with chained rotation.
+- Level 10: Outer Spiral - longer rising perimeter route.
+- Level 11: The Split Climb - uses both sides of the structure.
+- Level 12: The Long Gap - longer bridge/lift sequencing.
+- Level 13: Twin Mechanism - two lifted corners and four bridge states.
+- Level 14: The Stepped Circuit - multi-stage circuit climb.
+- Level 15: The Upper Grid - expanded grid path with several controlled rises.
+- Level 16: The Grand Switchback - longest redesigned pre-Level-17 climb.
+
+Safety checks passed:
+- No normal-state block overlaps in Levels 4-16.
+- No vertical slider final-position overlaps in Levels 4-16.
+- No rotator alternate-orientation overlaps in Levels 4-16.
+- Slider crankFace values are explicitly exposed for visibility/clickability.
+- Hidden level menu remains dynamic and should continue to read the actual level count.
+- JS syntax check passed.

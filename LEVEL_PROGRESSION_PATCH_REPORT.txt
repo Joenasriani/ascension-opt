@@ -1,0 +1,21 @@
+ASCENSION PROGRESSION PATCH REPORT
+
+Scope:
+- Patched only Levels 7, 10, 12, 13, and 14.
+- Preserved all other levels, visuals, controls, hidden dynamic menu, and gameplay systems.
+- Updated both bundled game level data and levels_1_21.json so future audits are consistent.
+
+Affected levels:
+- Level 7: The Quiet Switchback - blocks=17, sliders=2, rotators=3, walkables=6
+- Level 10: Outer Spiral - blocks=20, sliders=3, rotators=3, walkables=7
+- Level 12: The Long Gap - blocks=20, sliders=3, rotators=3, walkables=7
+- Level 13: Twin Mechanism - blocks=23, sliders=3, rotators=4, walkables=8
+- Level 14: The Stepped Circuit - blocks=22, sliders=3, rotators=3, walkables=8
+
+Validation:
+- JS syntax check passed.
+- ZIP integrity passed.
+- No normal block overlaps detected from Levels 1-21.
+- No slider raised-position overlaps detected from Levels 1-21.
+- No rotator alternate-orientation overlaps detected from Levels 1-21.
+- Manivel/crank faces remain explicit on slider blocks.

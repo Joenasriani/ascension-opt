@@ -1,0 +1,19 @@
+TITLE REVERT REPORT
+
+Change made:
+- Reverted the game title from the SVG wordmark back to the original in-game text title treatment.
+- Removed assets/ascension-wordmark.svg.
+- Restored the pre-wordmark bundled game script from the latest progression-patched build.
+
+Preserved:
+- Levels 1-21.
+- Redesigned Levels 4-16.
+- Progression patch for Levels 7, 10, 12, 13, and 14.
+- Levels 17-21 additions.
+- Hidden dynamic level selector.
+- Moving-block collision fixes.
+- Rotating-block collision guard.
+- Existing music and assets.
+
+Gameplay changed: No.
+Visual title changed: Yes, reverted to original.

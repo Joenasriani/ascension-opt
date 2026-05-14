@@ -1,0 +1,17 @@
+Added five new QA-build levels after Level 16.
+
+Affected additions:
+- Level 17: Bridge Arms - longer 3-slider / 3-rotator elevated route.
+- Level 18: The Folding Route - longer rectangular sequence with 4 rotators and 3 lifts.
+- Level 19: Counterweight Walk - higher multi-step climb with 4 sliders and 4 rotators.
+- Level 20: The Inner Circuit - longer circuit path with 4 sliders and 5 rotators.
+- Level 21: The Upper Mandala - longest structure with 6 sliders and 6 rotators.
+
+Rules followed:
+- No redesign.
+- Existing visual style preserved.
+- Existing mechanics only: walkable blocks, vertical sliders, rotators, support pillars.
+- Each added level is longer and harder than the previous one.
+- Slider final positions avoid direct geometry merge.
+- Rotator alternate orientations are spaced with clearance.
+- Handles use visible crankFace values where needed.

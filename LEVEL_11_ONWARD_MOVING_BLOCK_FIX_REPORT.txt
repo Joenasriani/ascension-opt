@@ -1,0 +1,21 @@
+Level 12 h2: position: {'x': 1, 'y': 2, 'z': 4} -> {'x': 2, 'y': 2, 'z': 4}
+Level 12 s1: crankFace: right -> front
+Level 13 h1: position: {'x': 0, 'y': 2, 'z': 1} -> {'x': 1, 'y': 2, 'z': 1}
+Level 13 s1: crankFace: right -> front
+Level 13 h3: position: {'x': 4, 'y': 4, 'z': 0} -> {'x': 3, 'y': 4, 'z': 0}
+Level 14 h1: position: {'x': 1, 'y': 2, 'z': 0} -> {'x': 1, 'y': 2, 'z': 1}
+Level 14 s2: position: {'x': 2, 'y': 2, 'z': 0} -> {'x': 2, 'y': 2, 'z': 1}
+Level 14 h2: position: {'x': 2, 'y': 4, 'z': 0} -> {'x': 2, 'y': 4, 'z': 2}
+Level 14 s3: position: {'x': 3, 'y': 4, 'z': 0} -> {'x': 3, 'y': 4, 'z': 2}
+Level 14 end: position: {'x': 3, 'y': 6, 'z': 0} -> {'x': 3, 'y': 6, 'z': 3}
+Level 15 h2: position: {'x': 1, 'y': 2, 'z': 4} -> {'x': 2, 'y': 2, 'z': 4}
+Level 15 s1: crankFace: right -> front
+Level 15 r2: position: {'x': 1, 'y': 2, 'z': 6} -> {'x': 2, 'y': 2, 'z': 6}
+Level 15 h3: position: {'x': 1, 'y': 2, 'z': 8} -> {'x': 2, 'y': 2, 'z': 8}
+Level 15 s2: position: {'x': 2, 'y': 2, 'z': 8} -> {'x': 3, 'y': 2, 'z': 8}; crankFace: right -> front
+Level 15 end: position: {'x': 2, 'y': 4, 'z': 8} -> {'x': 4, 'y': 4, 'z': 8}
+Level 16 h1: position: {'x': 1, 'y': 2, 'z': 0} -> {'x': 2, 'y': 2, 'z': 0}
+Level 16 s1: crankFace: right -> front
+Level 16 h3: position: {'x': 5, 'y': 4, 'z': 1} -> {'x': 6, 'y': 4, 'z': 1}
+Level 16 s2: crankFace: right -> front
+Level 16 end: position: {'x': 4, 'y': 6, 'z': 5} -> {'x': 3, 'y': 6, 'z': 5}
