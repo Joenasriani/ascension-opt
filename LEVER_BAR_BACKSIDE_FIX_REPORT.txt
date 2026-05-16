@@ -1,0 +1,18 @@
+LEVER BAR BACKSIDE FIX
+
+Scope:
+- Fixed only the black vertical leveler/lever bars for slider blocks.
+- No gameplay, levels, door orientation, loading screen, audio, or puzzle logic changed.
+
+Issue:
+- The previous anti-z-fighting pass moved the black bars to the side defined by each crankFace.
+- This made some bars appear on the wrong visible side of the block.
+
+Fix:
+- Repositioned slider black bars consistently behind the slider block.
+- Kept a small clearance offset behind the block to prevent z-fighting with the block face.
+- Bar position now uses the slider block depth, so it remains correctly behind blocks with different Z sizes.
+
+Validation:
+- JavaScript syntax check passed.
+- ZIP integrity check passed after packaging.

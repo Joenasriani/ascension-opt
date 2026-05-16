@@ -1,0 +1,19 @@
+ASCENSION ETA BAR ONLY FIX
+
+Scope:
+- Fixed only the start/loading state presentation.
+- No gameplay, level, door, lever, audio, camera, or puzzle logic changed.
+
+Issue:
+- During the music buffering/ETA bar state, the screen still showed title/subtitle/button/footer text.
+
+Fix:
+- When the ETA/progress bar is active, the start title is hidden.
+- The subtitle is hidden.
+- The BEGIN/BUFFERING button is hidden.
+- The bottom build/footer text is hidden.
+- The progress bar remains visible by itself.
+
+Validation:
+- JavaScript syntax check passed.
+- ZIP integrity check passed.

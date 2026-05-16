@@ -1,0 +1,10 @@
+Mobile portrait camera zoom patch
+
+Changed only the orthographic camera zoom calculation for portrait screens with width <= 768px.
+
+Previous portrait zoom: 40 * aspect * 1.5
+New mobile portrait zoom: 40 * aspect * 1.85
+
+Effect: levels start slightly closer on mobile portrait screens so the structure appears larger.
+
+Unchanged: desktop landscape, desktop-wide view, level data, gameplay, UI, audio, collision, hidden menu, loading behavior.
