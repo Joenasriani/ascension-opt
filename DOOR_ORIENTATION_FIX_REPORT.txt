@@ -1,0 +1,26 @@
+ASCENSION DOOR ORIENTATION ALIGNMENT FIX
+
+Scope: exit door orientation only. No gameplay, puzzle, platform, block, manivel, UI, music, or level structure changes were made.
+
+Rule used: each exit door now faces the final linked approach block using cardinal orientation.
+
+Adjusted levels:
+- Level 8 (Folded Corner): doorRotation 3.141592653589793 -> -1.5707963267948966 ; approach link `r3` from east/+X.
+- Level 10 (Outer Spiral): doorRotation 3.141592653589793 -> 0 ; approach link `s3` from south/-Z.
+- Level 12 (The Long Gap): doorRotation 1.5707963267948966 -> -1.5707963267948966 ; approach link `s3` from east/+X.
+- Level 13 (Twin Mechanism): doorRotation -1.5707963267948966 -> 1.5707963267948966 ; approach link `r4` from west/-X.
+- Level 14 (The Stepped Circuit): doorRotation 0 -> -1.5707963267948966 ; approach link `h6` from east/+X.
+- Level 15 (The Upper Grid): doorRotation 1.5707963267948966 -> 3.141592653589793 ; approach link `s4` from north/+Z.
+- Level 18 (The Folding Route): doorRotation 3.141592653589793 -> -1.5707963267948966 ; approach link `r4` from east/+X.
+- Level 19 (Counterweight Walk): doorRotation 1.5707963267948966 -> 3.141592653589793 ; approach link `r4` from north/+Z.
+- Level 20 (The Inner Circuit): doorRotation 0 -> 3.141592653589793 ; approach link `r5` from north/+Z.
+- Level 21 (The Upper Mandala): doorRotation -1.5707963267948966 -> 3.141592653589793 ; approach link `r6` from north/+Z.
+
+Unchanged levels:
+Level 1, Level 2, Level 3, Level 4, Level 5, Level 6, Level 7, Level 9, Level 11, Level 16, Level 17
+
+Validation:
+- levels_1_21.json updated.
+- bundled JS level array updated to match JSON.
+- No block/platform/mechanic data was changed.
+- ZIP integrity and JavaScript syntax were checked after patching.

@@ -1,0 +1,18 @@
+Raising/lowering block SFX patch
+
+Changed only the slide/raising-block activation sound function.
+
+Before:
+- Square wave
+- 200 Hz
+- 0.2 s
+- 0.03 peak gain
+- Harsh mechanical tone
+
+After:
+- Softer sine low tone at 180 Hz
+- Very light triangle overtone at 240 Hz
+- Lower peak gains: 0.018 and 0.01
+- Slightly longer decay for smoother movement feel
+
+Gameplay, levels, music, UI, title, and assets were not changed.
