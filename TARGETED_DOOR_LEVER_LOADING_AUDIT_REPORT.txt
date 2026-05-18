@@ -1,0 +1,28 @@
+ASCENSION TARGETED AUDIT PATCH
+
+Input issue scope:
+1. Doors should face the player approach path.
+2. Leveler/lever bars should not z-fight with block faces.
+3. Loading ETA screen should keep only the bar, with no loading text.
+
+Door audit:
+- Levels checked: 1-21.
+- Door rotation formula used: yaw = atan2(approach_dx, approach_dz), where approach direction is derived from the final linked path block into the end block.
+- Door rotations changed: None. Existing door rotations already matched the final approach paths.
+
+Leveler/lever bar fix:
+- Handle/manivel groups are now offset 0.08 units outward from block surfaces instead of sitting exactly on the surface.
+- Slider leveler bars are now placed outside the selected crank face with a 0.62 unit clearance.
+- This avoids coplanar/near-coplanar rendering and reduces z-fighting without changing puzzle logic.
+
+Loading screen fix:
+- Removed the text: "Loading music [percent]%"
+- Kept only the animated progress/loading bar.
+
+Forbidden changes respected:
+- No level redesign.
+- No puzzle logic change.
+- No player physics change.
+- No music change.
+- No title change.
+- No unrelated UI changes.
