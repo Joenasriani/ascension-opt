@@ -5,22 +5,6 @@ Auditor: QA Lead (Final Certification Gate)
 
 ## 1) Executive Summary
 
-
-## Audit Automation Added (Non-Gameplay Change)
-
-To address review feedback and make the audit reproducible, this branch now includes an executable static audit script:
-
-- `tools_final_audit.py`
-- Output artifact: `FINAL_ZERO_TOLERANCE_AUDIT_STATIC.json`
-
-The script performs:
-- Level graph integrity checks (`links[]` target existence, duplicate IDs, duplicate transforms).
-- Boot asset existence checks from `index.html` local references.
-- Repository placeholder/token scan for release hygiene.
-
-This is strictly tooling/documentation and does **not** modify gameplay, graphics, UI, responsiveness, or mechanics.
-
-
 | Item | Status |
 |---|---|
 | Market Release Decision | **FAIL (BLOCKED)** |
