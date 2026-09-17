@@ -1,5 +1,7 @@
 # ASCENSION Zero-Tolerance Final Audit Report
 
+> **Historical self-audit record — 2026-05-23.** This file preserves the conclusions and limitations of that audit pass. It is not an independent certification and should not be read as the current runtime or release status of ASCENSION. Later repository changes may supersede individual findings. This notice does not alter any game/runtime file.
+
 Audit Date: 2026-05-23 (UTC)  
 Auditor: QA Lead (Final Certification Gate)
 
