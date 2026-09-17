@@ -1,18 +1,15 @@
 # ascension-opt
-The puzzle game that started monument valley 
 >> https://joenasriani.github.io/ascension-opt/
 >>
 >> A S C E N S I O N 
 
 Architectural Geometry Puzzle
 
-Navigate broken paths, rotate  structures, and solve serene architectural puzzles in a floating world of alignment, and illusion.
+Navigate broken paths, rotate structures, and solve serene architectural puzzles in a floating world of alignment and illusion.
 
-ASCENSION is a minimalist architectural puzzle game where logic and geometry. Guide a silent traveler through calm, floating landscapes, broken stairways, rotating bridges, sliding pillars, and perspective-based paths that only exist when the world is aligned correctly.
+ASCENSION is a minimalist architectural puzzle game built around logic and geometry. Guide a silent traveler through calm, floating landscapes, broken stairways, rotating bridges, sliding pillars, and perspective-based paths that only exist when the world is aligned correctly.
 
 Every level challenges you to study the space, rotate your view, manipulate architectural mechanisms, and create a path where there was none before. There are no timers, no enemies, and no pressure - only clean geometry, calm atmosphere, and satisfying puzzle logic.
-
-
 
 FEATURES
 
@@ -22,7 +19,7 @@ Solve perspective-based architectural puzzles where alignment, angle, and spatia
 
 - Serene Floating Worlds
 
-Explore: calm minimalist environments built from clean architectural shapes, soft colors, and elegant geometric forms.
+Explore calm minimalist environments built from clean architectural shapes, soft colors, and elegant geometric forms.
 
 - Interactive Puzzle Mechanics
 
@@ -38,25 +35,15 @@ Use rotators, sliders, bridges, switches, and movable structures to reshape each
 
 - Browser-Friendly Gameplay: Play directly in your browser with smooth Three.js-powered 3D performance.
 
-
-
 HOW TO PLAY
 
 1. Click a path block to move the traveler.
-
 2. Rotate the camera to inspect the world from different angles.
-
 3. Click wheel mechanisms to rotate bridge segments.
-
 4. Drag red handles to move sliding platforms.
-
 5. Activate gold switches to create new paths.
-
 6. Align broken structures to connect routes.
-
 7. Reach the final platform to complete the puzzle.
-
-
 
 CONTROLS
 
@@ -66,6 +53,7 @@ Click path blocks to move.
 Click and drag the background to orbit the camera.
 Click wheels to rotate bridge segments.
 Drag red handles to move sliding platforms.
+
 Mobile:
 
 Tap path blocks to move.
@@ -73,14 +61,11 @@ Swipe or drag the background to orbit.
 Tap wheels and switches to interact.
 Drag handles to slide platforms.
 
-
 WHY PLAY ASCENSION?
 
 ASCENSION is designed for players who enjoy minimalist puzzle games, impossible geometry, architectural worlds, calm brain teasers, perspective puzzles, and atmospheric browser games.
 
-It combines clean visual design with logic-based spatial puzzles, making it ideal for short, relaxing sessions or focused puzzle-solving play.
-
-
+It combines clean visual design with logic-based spatial puzzles, making it suitable for short, relaxing sessions or focused puzzle-solving play.
 
 TECHNICAL DETAILS
 
@@ -89,27 +74,17 @@ Optimized for desktop and mobile browsers.
 Designed around strict alignment logic for fair puzzle solving.
 Runs directly in the browser with no download required.
 
-
 GOOD FOR PLAYERS WHO LIKE
 
 - Impossible geometry games
-
 - Minimalist puzzle games
-
 - Architectural puzzle worlds
-
 - Perspective-based puzzles
-
 - Relaxing brain teasers
-
 - Atmospheric indie games
-
 - Logic puzzle games
-
 - Browser-based 3D games
-
 - Calm exploration games
-
 - Spatial reasoning challenges
 
 ## Touch controls
@@ -128,4 +103,3 @@ GOOD FOR PLAYERS WHO LIKE
   - To avoid control conflicts, straight two-finger cardinal swipes still move the player, while continuous coherent translation drives scene/pedestal pan.
 
 Two-finger movement follows existing valid-walk constraints (linked blocks and collision checks), so invalid moves are ignored.
-
