@@ -1,105 +1,163 @@
-# ascension-opt
->> https://joenasriani.github.io/ascension-opt/
->>
->> A S C E N S I O N 
+# ASCENSION
 
-Architectural Geometry Puzzle
+Browser-based 3D architectural puzzle game built around linked paths, rotating structures, vertical sliders, spatial alignment, and constrained movement.
 
-Navigate broken paths, rotate structures, and solve serene architectural puzzles in a floating world of alignment and illusion.
+## Repository scope
 
-ASCENSION is a minimalist architectural puzzle game built around logic and geometry. Guide a silent traveler through calm, floating landscapes, broken stairways, rotating bridges, sliding pillars, and perspective-based paths that only exist when the world is aligned correctly.
+This repository contains the current browser-ready ASCENSION build and its supporting level data, QA utilities, PWA files, and Android/TWA packaging preparation.
 
-Every level challenges you to study the space, rotate your view, manipulate architectural mechanisms, and create a path where there was none before. There are no timers, no enemies, and no pressure - only clean geometry, calm atmosphere, and satisfying puzzle logic.
+The checked-in application is primarily a distribution build rather than a conventional source-development workspace: the browser runtime is shipped as a compiled JavaScript bundle and the repository does not contain a package manifest or local dependency-install workflow.
 
-FEATURES
+### Public builds
 
-- Geometry Puzzles
+- Playable game: https://joenasr.itch.io/ascension
+- GitHub Pages build: https://joenasriani.github.io/ascension-opt/
 
-Solve perspective-based architectural puzzles where alignment, angle, and spatial logic decide the path forward.
+## Current implementation
 
-- Serene Floating Worlds
+| Area | Implementation |
+| --- | --- |
+| Rendering | Three.js `0.181.x` through React Three Fiber |
+| UI/runtime | React `19.2.x` / React DOM `19.2.x` |
+| 3D helpers | `@react-three/drei` `10.7.x` |
+| Animation | `@react-spring/three` `10.0.x` |
+| Level set | 21 levels |
+| Level representation | Linked block graph stored in `levels_1_21.json` and mirrored in the bundled runtime |
+| Primary mechanics | Walkable blocks, rotators, vertical sliders/lifts, endpoint doors |
+| Browser packaging | Static HTML + compiled JavaScript assets |
+| Offline/PWA support | Web manifest, service worker, offline fallback, local app-shell assets |
+| QA tooling | Hidden level-select overlay loaded from `assets/qa-level-select.js` |
+| Android path | Trusted Web Activity / Bubblewrap preparation; see `README_APK.md` |
 
-Explore calm minimalist environments built from clean architectural shapes, soft colors, and elegant geometric forms.
+Runtime libraries are resolved through the import map in `index.html`; several dependencies remain remote and therefore require network availability on first load.
 
-- Interactive Puzzle Mechanics
+## Gameplay model
 
-Use rotators, sliders, bridges, switches, and movable structures to reshape each level and open new routes.
+Each level is represented as a graph of blocks with explicit IDs, positions, dimensions, and `links[]` relationships.
 
-- Perspective-Based Navigation: Change your viewing angle to understand impossible paths and reveal hidden solutions.
+The principal block roles in the current level data are:
 
-- 10 Color Themes: Progress through unique visual themes with refined palettes, clean interface design, and minimalist architectural presentation.
+- `WALKABLE` — traversable path nodes.
+- `ROTATOR` — movable bridge/path segments whose orientation changes route connectivity.
+- `SLIDER` — vertically movable path blocks used to connect elevations.
+- `EMPTY` — non-walkable supporting geometry.
 
-- Progressive Difficulty: Start with simple tutorial spires, then advance into more complex architectural challenges that require planning and observation.
+Player movement is constrained by the current linked-path state and collision rules. Rotator and slider state changes can make previously disconnected route segments traversable.
 
-- Calm Puzzle Experience: No health bars, no combat, no countdowns. ASCENSION focuses on slow thinking, spatial reasoning, and peaceful problem-solving.
+`levels_1_21.json` contains the explicit audit/reference representation for all 21 levels. Historical repository validation reports record checks for broken intra-level links, duplicate IDs, exact-position duplicates, raised-slider overlaps, and alternate rotator orientations.
 
-- Browser-Friendly Gameplay: Play directly in your browser with smooth Three.js-powered 3D performance.
+## Controls
 
-HOW TO PLAY
+### Desktop
 
-1. Click a path block to move the traveler.
-2. Rotate the camera to inspect the world from different angles.
-3. Click wheel mechanisms to rotate bridge segments.
-4. Drag red handles to move sliding platforms.
-5. Activate gold switches to create new paths.
-6. Align broken structures to connect routes.
-7. Reach the final platform to complete the puzzle.
+- Click a valid path block to move.
+- Click and drag the scene background to orbit the camera.
+- Interact with rotator handles to change bridge orientation.
+- Interact with slider handles to raise or lower movable blocks.
 
-CONTROLS
+### Touch
 
-Desktop:
+- Single-finger interaction handles normal block selection and puzzle controls.
+- Two-finger cardinal swipes request player movement in the dominant swipe direction.
+- Coherent two-finger translation pans the level group on X/Y.
+- Pan is suppressed when the gesture is classified as a pinch or significant rotation.
 
-Click path blocks to move.
-Click and drag the background to orbit the camera.
-Click wheels to rotate bridge segments.
-Drag red handles to move sliding platforms.
+Current gesture thresholds documented by the implementation:
 
-Mobile:
+- pinch suppression threshold: normalized distance delta `> 0.01`
+- rotation suppression threshold: angle delta `> 0.12` radians
+- scene-pan sensitivity: `0.012` world units per pixel of centroid motion
 
-Tap path blocks to move.
-Swipe or drag the background to orbit.
-Tap wheels and switches to interact.
-Drag handles to slide platforms.
+Two-finger movement still passes through the normal linked-block and collision validation; invalid movement requests are ignored.
 
-WHY PLAY ASCENSION?
+## Repository layout
 
-ASCENSION is designed for players who enjoy minimalist puzzle games, impossible geometry, architectural worlds, calm brain teasers, perspective puzzles, and atmospheric browser games.
+```text
+.
+├── index.html
+├── assets/
+│   ├── index-BjuLtVzX.js        # compiled game runtime
+│   └── qa-level-select.js       # hidden QA level selector
+├── levels_1_21.json             # level graph/reference data
+├── music/
+│   └── thelittlehero.mp3
+├── manifest.webmanifest
+├── service-worker.js
+├── offline.html
+├── icons/
+├── .well-known/
+│   └── assetlinks.example.json
+├── apk-package-info.json
+├── verify-apk-ready.sh
+├── README_APK.md
+└── *_REPORT.*                   # historical implementation / QA records
+```
 
-It combines clean visual design with logic-based spatial puzzles, making it suitable for short, relaxing sessions or focused puzzle-solving play.
+## Running locally
 
-TECHNICAL DETAILS
+No application build step is required for the checked-in distribution.
 
-Built with Three.js for smooth web-based 3D performance.
-Optimized for desktop and mobile browsers.
-Designed around strict alignment logic for fair puzzle solving.
-Runs directly in the browser with no download required.
+Serve the repository through a local HTTP server rather than opening `index.html` directly:
 
-GOOD FOR PLAYERS WHO LIKE
+```bash
+python3 -m http.server 8080
+```
 
-- Impossible geometry games
-- Minimalist puzzle games
-- Architectural puzzle worlds
-- Perspective-based puzzles
-- Relaxing brain teasers
-- Atmospheric indie games
-- Logic puzzle games
-- Browser-based 3D games
-- Calm exploration games
-- Spatial reasoning challenges
+Then open:
 
-## Touch controls
+```text
+http://localhost:8080/
+```
 
-- **Single finger**: unchanged from existing behavior (tap puzzle blocks and interact normally).
-- **Two fingers**: swipe in one dominant axis to move the player in a straight cardinal direction:
-  - Swipe left → move left
-  - Swipe right → move right
-  - Swipe up → move up
-  - Swipe down → move down
-- **Two-finger pan (scene/pedestal translation)**:
-  - Place two fingers and move them together to translate the level group on **X/Y**.
-  - Pan starts only when both fingers move in a similar direction.
-  - Pan is suppressed when the gesture looks like a **pinch** (distance delta > `0.01` in normalized scene units) or significant **rotation** (angle delta > `0.12` radians).
-  - Pan sensitivity is `0.012` world units per pixel of centroid motion.
-  - To avoid control conflicts, straight two-finger cardinal swipes still move the player, while continuous coherent translation drives scene/pedestal pan.
+A network connection is still required for runtime modules and other resources that remain CDN-hosted.
 
-Two-finger movement follows existing valid-walk constraints (linked blocks and collision checks), so invalid moves are ignored.
+## PWA behavior
+
+The repository includes:
+
+- `manifest.webmanifest`
+- `service-worker.js`
+- `offline.html`
+- installable icon assets
+- an app-shell cache containing the main document, runtime bundle, audio, manifest, offline page, and icons
+
+The service worker caches same-origin GET responses and falls back to `offline.html` when a same-origin request cannot be fetched.
+
+Remote dependencies are not fully self-contained. `REMOTE_DEPENDENCIES.txt` documents the current external-runtime dependency boundary.
+
+## QA level selector
+
+`assets/qa-level-select.js` provides a hidden level-selection overlay for testing.
+
+Current trigger sequences:
+
+- mobile: `up, up, down, down, left, left, right, right`
+- desktop: `ArrowUp, ArrowUp, ArrowDown, ArrowDown, ArrowLeft, ArrowLeft, ArrowRight, ArrowRight`
+
+The selector is a QA utility and is separate from normal level progression.
+
+## Validation notes
+
+The repository contains historical QA and implementation reports. The May 23, 2026 static audit recorded:
+
+- 21/21 level graphs with no broken `links[]` references;
+- no duplicate block IDs;
+- no duplicate exact transforms in the level data;
+- presence of the local runtime bundle, QA selector, and background audio referenced by `index.html`.
+
+Those checks are static repository evidence only. They do not substitute for current browser/device runtime testing, performance profiling, accessibility testing, or store-release validation.
+
+## Android packaging
+
+`README_APK.md` documents the current Trusted Web Activity / Bubblewrap path.
+
+The Android packaging workflow wraps the HTTPS-hosted web application; it is not a separate native gameplay implementation.
+
+## Known constraints
+
+- The checked-in game runtime is compiled/minified, so this repository is not a complete editable source tree for the application.
+- Several JavaScript and CSS/font dependencies are loaded remotely.
+- Full offline operation is therefore not guaranteed on first launch.
+- PWA/TWA deployment requires HTTPS outside localhost.
+- Production Android Digital Asset Links require the real release signing certificate fingerprint; the repository contains only a template.
+- Historical QA reports explicitly distinguish static checks from unverified runtime/device behavior.
