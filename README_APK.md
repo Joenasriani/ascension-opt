@@ -1,82 +1,167 @@
-# Ascension VR - APK Ready Web Package
+# ASCENSION — Android / Trusted Web Activity Packaging
 
-This folder has been prepared for Android APK/AAB packaging through Bubblewrap / Trusted Web Activity.
+This document covers the Android packaging path for the web build in this repository.
 
-## What was added
+The current Android approach uses a **Trusted Web Activity (TWA)** generated with Bubblewrap. The packaged application loads the HTTPS-hosted ASCENSION web build; it is not a separate native gameplay implementation.
 
-- `manifest.webmanifest`
-- `service-worker.js`
-- `offline.html`
-- PWA icon set in `/icons`
-- Android Digital Asset Links example at `/.well-known/assetlinks.example.json`
-- Mobile/TWA meta tags in `index.html`
-- Service worker registration in `index.html`
-- `apk-package-info.json` with suggested Bubblewrap values
+## Packaging files
 
-## Important
+| File | Purpose |
+| --- | --- |
+| `manifest.webmanifest` | PWA application metadata |
+| `service-worker.js` | app-shell and same-origin request caching |
+| `offline.html` | same-origin offline fallback |
+| `icons/` | standard and maskable launcher icons |
+| `.well-known/assetlinks.example.json` | Digital Asset Links template |
+| `apk-package-info.json` | retained Android/TWA packaging values |
+| `verify-apk-ready.sh` | static presence/manifest validation helper |
+| `index.html` | browser entry point and service-worker registration |
 
-Bubblewrap requires the game to be hosted on HTTPS first. Upload this full folder to Vercel, Netlify, GitHub Pages, or your own HTTPS hosting.
+## Existing Android identity
 
-After deployment, confirm these URLs work:
+The repository currently records the following packaging values:
 
-- `https://YOUR_DOMAIN/`
-- `https://YOUR_DOMAIN/manifest.webmanifest`
-- `https://YOUR_DOMAIN/service-worker.js`
-- `https://YOUR_DOMAIN/icons/icon-512.png`
+```text
+Package ID:     com.joenasr.ascensionvr
+App name:       Ascension VR
+Launcher name:  Ascension
+Display mode:   fullscreen
+Orientation:    landscape
+Start URL:      /
+Scope:          /
+```
 
-## Bubblewrap commands
+Treat the package ID as an existing release identity. Do not change it for an established Play application unless the release/migration consequences have been verified first.
 
-Install Bubblewrap if not already installed:
+## Requirements
+
+Before generating the Android package:
+
+1. Host the complete web build on an HTTPS origin.
+2. Verify the PWA manifest is reachable and valid.
+3. Verify the service worker and required local assets resolve from that origin.
+4. Install Node.js/npm and Bubblewrap.
+5. Obtain the signing-certificate SHA-256 fingerprint that will be used for the Android release.
+
+Localhost is suitable for browser testing, but a verified HTTPS origin is required for the production TWA relationship.
+
+## Verify the hosted web build
+
+After deployment, verify at minimum:
+
+```text
+https://YOUR_DOMAIN/
+https://YOUR_DOMAIN/manifest.webmanifest
+https://YOUR_DOMAIN/service-worker.js
+https://YOUR_DOMAIN/icons/icon-512.png
+```
+
+The web build also depends on remote runtime resources documented in `REMOTE_DEPENDENCIES.txt`; test first launch with normal network access.
+
+## Install Bubblewrap
 
 ```bash
 npm install -g @bubblewrap/cli
 ```
 
-Initialize the Android project:
+## Initialize the Android project
 
 ```bash
 bubblewrap init --manifest=https://YOUR_DOMAIN/manifest.webmanifest
 ```
 
-Suggested package name:
+During initialization, confirm that the generated configuration matches the intended Android identity and hosted origin.
 
-```text
-com.joenasr.ascensionvr
-```
-
-The package identifier above is retained from the existing project metadata. Do not change it for an existing Play identity without first verifying the package used by the current Android/Play release.
-
-Build:
+## Build
 
 ```bash
 bubblewrap build
 ```
 
-Expected outputs:
+Typical release artifacts are:
 
 ```text
 app-release-signed.apk
 app-release-bundle.aab
 ```
 
-## Digital Asset Links step
+Artifact names can vary with Bubblewrap/tooling versions and generated project configuration.
 
-After Bubblewrap or Play Console provides the signing certificate fingerprint, create this deployed file:
+## Digital Asset Links
+
+A fullscreen verified TWA requires a valid Digital Asset Links relationship between the Android package and the production web origin.
+
+The repository contains:
+
+```text
+/.well-known/assetlinks.example.json
+```
+
+This file is a template only. It intentionally does not contain a valid production signing fingerprint.
+
+For production:
+
+1. Obtain the SHA-256 certificate fingerprint from the actual release signing identity, typically from Play Console app-signing information or the Bubblewrap signing configuration.
+2. Copy the template to:
 
 ```text
 /.well-known/assetlinks.json
 ```
 
-Use `/.well-known/assetlinks.example.json` only as a template. Its fingerprint value is deliberately non-valid and must never be deployed as the production `assetlinks.json`.
+3. Replace the placeholder fingerprint with the exact release fingerprint.
+4. Deploy the file at:
 
-Replace `REPLACE_WITH_PLAY_APP_SIGNING_SHA256_FINGERPRINT` with the exact SHA-256 certificate fingerprint generated by Bubblewrap or shown in **Play Console → App integrity / App signing** for the package actually being released.
+```text
+https://YOUR_DOMAIN/.well-known/assetlinks.json
+```
 
-The repository does not currently contain that real signing fingerprint, so no production `assetlinks.json` is generated here. This avoids inventing or accidentally changing Android signing identity.
+5. Verify that the package name and certificate fingerprint match the Android artifact being distributed.
 
-Without a valid deployed `assetlinks.json`, Android may open the game with browser/custom-tab UI instead of a verified fullscreen TWA.
+Do not generate a production `assetlinks.json` from an assumed or temporary fingerprint. A mismatch can cause Android to open the application with browser/custom-tab UI rather than as a verified TWA.
 
-## Current limits
+## Static packaging check
 
-- The game itself is still a web-hosted game. The APK/AAB opens the HTTPS version through TWA.
-- For a fully offline APK, the game needs a separate native WebView wrapper or Android asset bundling workflow.
-- The app uses CDN-loaded CSS/fonts in `index.html`; first run should be tested on a real Android device before store submission.
+The repository includes:
+
+```bash
+./verify-apk-ready.sh
+```
+
+The script checks for the presence of the current browser entry point, manifest, service worker, offline fallback, icons, audio asset, and compiled runtime bundle, then validates the manifest JSON syntax.
+
+It does **not** validate:
+
+- Android signing;
+- Digital Asset Links against a deployed origin;
+- Play Console configuration;
+- runtime behavior on Android devices;
+- store-policy compliance;
+- performance, memory, battery, or lifecycle behavior.
+
+## Offline behavior
+
+The service worker caches the local application shell and same-origin GET responses.
+
+However, the current web build still references remote JavaScript modules and external CSS/font resources. As a result, a first-run device without network access cannot be treated as fully supported offline.
+
+A fully self-contained Android package would require either:
+
+- localization/bundling of all runtime web dependencies before TWA packaging; or
+- a separate native WebView/asset-bundling workflow.
+
+## Release verification
+
+Before store submission, validate the generated build on representative Android hardware and check:
+
+- cold start and resume behavior;
+- touch and multi-touch controls;
+- orientation and fullscreen behavior;
+- service-worker update behavior;
+- offline/reconnect behavior;
+- audio initialization;
+- remote dependency failures;
+- Digital Asset Links verification;
+- package/signing identity;
+- current target-SDK and Play policy requirements.
+
+Store requirements change over time; verify the current Google Play requirements at release time rather than relying on historical values recorded in repository files.
