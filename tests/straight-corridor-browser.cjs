@@ -65,10 +65,12 @@ const vm=require('node:vm');
      const before=await state();
      await page.mouse.click(candidate.x,candidate.y);
      await page.waitForTimeout(180);
+     const intermediate=await state();
+     await page.waitForTimeout(1320);
      const after=await state();
-     report.hits.push({point:candidate,cursor,before:before.current,after:after.current});
+     report.hits.push({point:candidate,cursor,before:before.current,intermediate:intermediate.current,after:after.current});
      tries++;
-     if(after.current==='h1'){
+     if(after.current==='h1'&&intermediate.current==='r1'){
        report.success=true;report.hitPoint=candidate;
        await page.screenshot({path:output+'/after-click.png'});
        await page.waitForTimeout(900);
@@ -78,7 +80,7 @@ const vm=require('node:vm');
      if(tries>=90)break;
    }
    report.attempts=tries;
-   if(!report.success)throw Error('No browser click reached h1 directly from start; inspect hit reports and visual evidence');
+   if(!report.success)throw Error('No click traversed start -> r1 -> h1 stepwise; inspect hit reports and visual evidence');
    const final=await state();
    if(final.current!=='h1')throw Error('Actor did not remain at clicked destination');
    const r1=initial.blocks.find(b=>b.id==='r1'),r2=final.blocks.find(b=>b.id==='r1');
