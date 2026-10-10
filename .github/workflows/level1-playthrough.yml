@@ -16,6 +16,8 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Start game
         run: python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/ascension-server.log 2>&1 &
+      - name: Inspect actual Level 1 crank hit regions
+        run: node tests/level1-handle-diagnostic.cjs
       - name: Solve Level 1 through clicks
         run: node tests/level1-playthrough.cjs
       - name: Archive gameplay evidence
