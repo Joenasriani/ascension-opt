@@ -9,7 +9,10 @@ const fs = require('node:fs');
     {width:1920,height:1080,levels:[1,14,21]},
     {width:2560,height:1440,levels:[1,21]},
     {width:390,height:844,levels:[1,21]},
-    {width:844,height:390,levels:[21]}
+    {width:844,height:390,levels:[21]},
+    {width:3840,height:2160,levels:[1,21]},
+    {width:360,height:640,levels:[21]},
+    {width:640,height:360,levels:[21]}
   ];
   let failed = false;
   for (const config of configurations) {
@@ -28,6 +31,26 @@ const fs = require('node:fs');
         const image='camera-evidence/level-'+level+'-'+config.width+'x'+config.height+'.png';
         await page.screenshot({path:image});
         diagnostics.push({level,viewport:config.width+'x'+config.height,screenshot:image,errors:[...problems]});
+        if(level===21 && config.width===1920 && config.height===1080){
+          const cx=config.width/2,cy=config.height/2;
+          await page.mouse.move(cx,cy);
+          await page.mouse.wheel(0,-500);
+          await page.waitForTimeout(350);
+          await page.screenshot({path:'camera-evidence/level-21-manual-zoom.png'});
+          await page.mouse.move(cx,cy);
+          await page.mouse.down();
+          await page.mouse.move(cx+160,cy+85,{steps:12});
+          await page.mouse.up();
+          await page.waitForTimeout(350);
+          await page.screenshot({path:'camera-evidence/level-21-manual-orbit.png'});
+          await page.mouse.move(cx,cy);
+          await page.mouse.down({button:'right'});
+          await page.mouse.move(cx+110,cy-75,{steps:10});
+          await page.mouse.up({button:'right'});
+          await page.waitForTimeout(350);
+          await page.screenshot({path:'camera-evidence/level-21-manual-pan.png'});
+          diagnostics.push({level,viewport:'1920x1080',manualControls:'wheel, drag, right-drag exercised'});
+        }
       }
       if(problems.length)throw Error(problems.join('; '));
     }catch(e){failed=true;diagnostics.push({viewport:config.width+'x'+config.height,error:String(e)});}
