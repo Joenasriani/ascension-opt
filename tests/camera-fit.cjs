@@ -1,63 +1,46 @@
-// Verify the production bundle's initial orthographic camera fit for every level.
-// This is a geometric projection test, not a browser rendering certification.
-const fs = require('node:fs');
-const vm = require('node:vm');
-const assert = require('node:assert/strict');
-
-const bundle = fs.readFileSync('assets/index-BjuLtVzX.js', 'utf8');
-const levels = JSON.parse(fs.readFileSync('levels_1_21.json', 'utf8'));
-const begin = bundle.indexOf('__ascFrame=');
-const finish = bundle.indexOf(',W4=', begin);
-assert(begin >= 0 && finish > begin, 'Adaptive camera routine not found in shipped runtime');
-const computeFrame = vm.runInNewContext('(' + bundle.slice(begin + '__ascFrame='.length, finish) + ')', { Math });
-assert(bundle.includes('target:e.center'), 'OrbitControls must rotate around the level center');
-assert(bundle.includes('enableRotate:!0,enableZoom:!0,enablePan:!0'), 'Player camera controls must remain available');
-
-const rt = Math.SQRT1_2;
-const viewports = [[1280,800], [1920,1080], [2560,1440], [3440,1440], [390,844], [844,390]];
-let checked = 0;
-
-function vertices(level) {
-  const corners = [];
-  for (const block of level.blocks) {
-    const states = ['ROTATOR','SLIDER'].includes(block.type) ? [0,1] : [0];
-    const p = block.position;
-    const sz = block.size || {x:1,y:1,z:1};
-    for (const state of states) {
-      const rotated = block.type === 'ROTATOR' && state === 1;
-      const dx = (rotated ? sz.z : sz.x) / 2, dy = sz.y / 2, dz = (rotated ? sz.x : sz.z) / 2;
-      for (const x of [-dx,dx]) for (const y of [-dy,dy]) for (const z of [-dz,dz]) {
-        const px = p.x + x, py = p.y + y + (block.type === 'SLIDER' ? 2*state : 0), pz = p.z + z;
-        // Actual scene rotation is +PI/4 around Three.js Y.
-        corners.push([(px+pz)*rt, py, (-px+pz)*rt]);
-      }
-    }
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const bundle=fs.readFileSync('assets/index-BjuLtVzX.js','utf8');
+const levels=JSON.parse(fs.readFileSync('levels_1_21.json','utf8'));
+const from=bundle.indexOf('__ascFrame='),to=bundle.indexOf(',W4=',from);
+assert(from>=0&&to>from,'Missing level camera fitter');
+const fit=vm.runInNewContext('('+bundle.slice(from+11,to)+')',{Math});
+assert(bundle.includes('target:e.center'),'Orbit center is not level center');
+assert(bundle.includes('enableRotate:!0,enableZoom:!0,enablePan:!0'),'Player controls disabled');
+assert(bundle.includes('minZoom:4,maxZoom:500'),'Manual zoom limits not updated');
+assert(bundle.includes('e.width*.85/t.spanX,e.height*.79/t.spanY'),'Unexpected camera fit ratios');
+const rt=Math.SQRT1_2,viewports=[[1280,800],[1920,1080],[2560,1440],[3440,1440],[390,844],[844,390],[3840,2160],[360,640],[640,360]];
+function corners(level){
+ const vertices=[];
+ for(const b of level.blocks){
+  const states=['ROTATOR','SLIDER'].includes(b.type)?[0,1]:[0],p=b.position,s=b.size||{x:1,y:1,z:1};
+  for(const st of states){
+   const rotated=b.type==='ROTATOR'&&st===1;
+   const hx=(rotated?s.z:s.x)/2,hz=(rotated?s.x:s.z)/2,cy=p.y+(b.type==='SLIDER'?2*st:0);
+   const add=(x,y,z)=>vertices.push([(x+z)*rt,y,(-x+z)*rt]);
+   for(const dx of [-hx,hx])for(const dy of [-s.y/2,s.y/2])for(const dz of [-hz,hz])add(p.x+dx,cy+dy,p.z+dz);
+   if(b.id===level.startBlockId||b.id===level.endBlockId)add(p.x,cy+2,p.z);
+   if(b.isRotatable||b.isSlideable)add(p.x,cy+s.y/2+.7,p.z);
   }
-  return corners;
+ }
+ return vertices;
 }
-
-for (const level of levels) {
-  const frame = computeFrame(level);
-  assert(frame.spanX > 0 && frame.spanY > 0);
-  assert.equal(frame.center.length, 3);
-  const points = vertices(level);
-  for (const [width,height] of viewports) {
-    const zoom = Math.min(width*.78/frame.spanX,height*.72/frame.spanY);
-    assert(zoom > 0 && Number.isFinite(zoom));
-    for (const point of points) {
-      const relative = point.map((v,i)=>v-frame.center[i]);
-      const horizontal = (relative[0]-relative[2])*rt;
-      const vertical = (-relative[0]+2*relative[1]-relative[2])/Math.sqrt(6);
-      const screenX = width/2 + horizontal*zoom;
-      const screenY = height/2 - vertical*zoom;
-      assert(screenX >= width*.05 && screenX <= width*.95,
-        'Level '+level.id+' clips horizontally at '+width+'x'+height+': '+screenX);
-      assert(screenY >= height*.05 && screenY <= height*.95,
-        'Level '+level.id+' clips vertically at '+width+'x'+height+': '+screenY);
-      checked++;
-    }
+let points=0;
+for(const level of levels){
+ const frame=fit(level),v=corners(level);assert(frame.spanX>0&&frame.spanY>0&&frame.center.length===3);
+ for(const [w,h] of viewports){
+  const zoom=Math.min(w*.85/frame.spanX,h*.79/frame.spanY);
+  assert(zoom>0&&Number.isFinite(zoom),'Invalid zoom on level '+level.id);
+  assert(zoom<=500,'Initial zoom exceeds OrbitControls maximum');
+  const marginX=w*.04,marginY=h*.04;
+  for(const p of v){
+   const x=p[0]-frame.center[0],y=p[1]-frame.center[1],z=p[2]-frame.center[2];
+   const px=w/2+zoom*(x-z)*rt,py=h/2-zoom*(-x+2*y-z)/Math.sqrt(6);
+   assert(px>=marginX&&px<=w-marginX&&py>=marginY&&py<=h-marginY,
+    'Level '+level.id+' clipped at '+w+'x'+h+': '+[px,py]);
+   points++;
   }
-  console.log('Level '+String(level.id).padStart(2,'0')+': initial camera geometry fits all '+viewports.length+' viewports');
+ }
+ console.log('Level '+String(level.id).padStart(2,'0')+': full initial structure fits');
 }
-console.log('CAMERA FIT PASS: '+levels.length+' levels, '+viewports.length+' viewport shapes, '+checked+' transformed corners');
-console.log('Note: camera geometry validation is not equivalent to actual screenshot-backed browser QA.');
+console.log('CAMERA FIT PASS: '+levels.length+' levels / '+viewports.length+' viewports / '+points+' projected points');
+console.log('LIMITS: not proof of rendered mesh visibility after arbitrary player orbit/pan.');
