@@ -8,7 +8,7 @@ A browser-based, isometric-style 3D architectural puzzle game about finding a ro
 
 ## How ASCENSION plays
 
-- **Walk between connected blocks.** Click a destination block; movement occurs only when the block is linked to the current position and their geometry aligns at the same elevation. A click does not automatically traverse a long corridor.
+- **Walk along connected blocks.** Click an adjacent reachable block to move normally. For a clear, directly aligned corridor at the same elevation, clicking a farther reachable block once sends the actor through each intermediate block in sequence. Movement will not automatically turn corners, cross gaps, bypass disabled mechanisms, or ignore disconnected geometry.
 - **Rotate bridges in quarter-turns.** Red handles rotate eligible blocks by 90 degrees, altering their usable footprint. A rotation is rejected if its destination geometry intersects another block.
 - **Raise and lower lifts.** Slider handles toggle blocks between their original height and an elevation 2 world units higher, creating or removing connections between tiers.
 - **Reach the exit.** Landing on the level's end block triggers completion; continue to the next level or choose **Seek Reflection** for a randomly selected atmospheric passage from a built-in offline collection. This feature does not generate text with an AI service.
@@ -36,7 +36,7 @@ Two public builds are available:
 - **itch.io:** https://joenasr.itch.io/ascension
 - **GitHub Pages:** https://joenasriani.github.io/ascension-opt/
 
-Repository verification is automated through `.github/workflows/verify.yml`. It checks the shipped file set and validates the level graph structure on every push and pull request.
+Repository verification is automated through `.github/workflows/verify.yml`, alongside geometry, solvability, camera, and browser interaction workflows. These checks cover static properties and selected runtime behaviors, not a complete 21-level end-to-end browser playthrough.
 
 Verification is intentionally limited to evidence this repository can reproduce. It does **not** claim browser/device gameplay correctness, visual quality, accessibility, performance, or store-release readiness.
 
@@ -92,7 +92,7 @@ Principal block roles:
 - `SLIDER` – vertically movable path block used to connect elevations.
 - `EMPTY` – non-walkable supporting geometry.
 
-The 21-level reference graph lives in `levels_1_21.json`. Level 14 was previously out of sync; PR #21 corrected the reference file. All 21 records were subsequently compared with the level array embedded in the shipped bundle and found structurally identical. This is a static equality check, not a solvability test.
+The 21-level reference graph lives in `levels_1_21.json`. Level 14 was previously out of sync; PR #21 corrected the reference file. All 21 records were subsequently compared with the level array embedded in the shipped bundle and found structurally identical. Separate modeled solvability checks cover all 21 levels; these are not equivalent to completing each level through a browser.
 
 ## Current implementation
 
