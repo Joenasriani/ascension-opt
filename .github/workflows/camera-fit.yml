@@ -1,0 +1,29 @@
+name: Adaptive camera framing
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  camera-fit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify all level bounds
+        run: node tests/camera-fit.cjs
+      - name: Install Playwright browser
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Serve current build
+        run: python3 -m http.server 8080 --bind 127.0.0.1 >/tmp/ascension-camera-server.log 2>&1 &
+      - name: Capture browser viewports
+        run: node tests/camera-viewport.cjs
+      - name: Upload screenshots and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: adaptive-camera-framing-evidence
+          path: camera-evidence/
+          if-no-files-found: warn
