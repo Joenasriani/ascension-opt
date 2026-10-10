@@ -172,7 +172,7 @@ Because the editable source tree is not present, gameplay/runtime pull requests 
 
 Forking is useful for experimentation, QA, packaging, documentation, and studying the level graph.
 
-However, **no license file is currently present in this repository**. Do not assume that public visibility grants unrestricted reuse, redistribution, or commercial rights. Licensing should be clarified before substantial reuse outside normal GitHub collaboration.
+**Code-only MIT licensing:** Original software code for which Joe Nasr holds sufficient licensing rights is made available under [MIT](LICENSE). See [LICENSE_SCOPE.md](LICENSE_SCOPE.md) for the binding scope explanation and asset exclusions. Music, icons, original artwork, narrative content, game branding, and other creative assets are **not** MIT-licensed. The compiled bundle includes third-party components and must not be treated as wholly MIT-licensed; its embedded license inventory and a complete editable production source are still unavailable. Do not redistribute the full playable game under MIT alone.
 
 ## Known constraints
 
