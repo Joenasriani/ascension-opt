@@ -1,0 +1,27 @@
+name: Gameplay interaction diagnostics
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  interaction-diagnostics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Chromium test dependencies
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Start local game
+        run: python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/ascension-server.log 2>&1 &
+      - name: Inspect Level 1 canvas targets
+        run: node tests/gameplay-interaction-diagnostics.cjs
+      - name: Archive interaction evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gameplay-interaction-diagnostics
+          path: gameplay-evidence/
+          if-no-files-found: warn
