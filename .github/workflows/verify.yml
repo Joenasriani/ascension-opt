@@ -20,3 +20,4 @@ jobs:
           bash verify-repo.sh
           python3 verify-geometry.py
           python3 verify-solvability.py
+          node tests/straight-corridor.cjs
