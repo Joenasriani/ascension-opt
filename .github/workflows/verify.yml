@@ -16,4 +16,6 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run repository verifier
-        run: bash verify-repo.sh
+        run: |
+          bash verify-repo.sh
+          python3 verify-geometry.py
