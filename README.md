@@ -1,10 +1,20 @@
 # ASCENSION
 
-A browser-based 3D architectural puzzle game about rebuilding paths through rotating structures, vertical lifts, spatial alignment, and constrained movement.
+A browser-based, isometric-style 3D architectural puzzle game about finding a route through a shifting structure. Rotate bridges, raise lifts, and navigate interconnected blocks to reach the exit across 21 levels.
 
 [Play on itch.io](https://joenasr.itch.io/ascension) · [Open GitHub Pages build](https://joenasriani.github.io/ascension-opt/)
 
 ![Repository verification](https://github.com/Joenasriani/ascension-opt/actions/workflows/verify.yml/badge.svg)
+
+## How ASCENSION plays
+
+- **Walk between connected blocks.** Click a destination block; movement occurs only when the block is linked to the current position and their geometry aligns at the same elevation. A click does not automatically traverse a long corridor.
+- **Rotate bridges in quarter-turns.** Red handles rotate eligible blocks by 90 degrees, altering their usable footprint. A rotation is rejected if its destination geometry intersects another block.
+- **Raise and lower lifts.** Slider handles toggle blocks between their original height and an elevation 2 world units higher, creating or removing connections between tiers.
+- **Reach the exit.** Landing on the level's end block triggers completion; continue to the next level or choose **Seek Reflection** for a randomly selected atmospheric passage from a built-in offline collection. This feature does not generate text with an AI service.
+- **Progress through 21 structures.** Later levels combine longer paths, multiple rotators, lifts, and elevated routes. Level size alone does not establish difficulty or solvability.
+
+The game includes background music and synthesized interaction sounds. Camera orbit, zoom, and pan controls are exposed through the 3D scene. Runtime behavior has been inspected statically; a complete browser/device playthrough has not been documented.
 
 ## What this repository is
 
@@ -82,7 +92,7 @@ Principal block roles:
 - `SLIDER` – vertically movable path block used to connect elevations.
 - `EMPTY` – non-walkable supporting geometry.
 
-The 21-level reference graph lives in `levels_1_21.json` and is mirrored by the compiled runtime.
+The 21-level reference graph lives in `levels_1_21.json`. Level 14 was previously out of sync; PR #21 corrected the reference file. All 21 records were subsequently compared with the level array embedded in the shipped bundle and found structurally identical. This is a static equality check, not a solvability test.
 
 ## Current implementation
 
@@ -131,10 +141,7 @@ The 21-level reference graph lives in `levels_1_21.json` and is mirrored by the 
 
 ### Touch
 
-- Single-finger interaction handles normal block selection and puzzle controls.
-- Two-finger cardinal swipes request movement in the dominant direction.
-- Coherent two-finger translation pans the level group.
-- Pan is suppressed when the gesture is classified as a pinch or significant rotation.
+Touch input is routed through the 3D canvas and the browser's pointer/touch handling. Basic tapping is expected to act on puzzle blocks and handles, but gesture-specific behavior and compatibility across devices require a browser/device test before being presented as guaranteed.
 
 ## QA level selector
 
@@ -169,7 +176,7 @@ However, **no license file is currently present in this repository**. Do not ass
 
 ## Known constraints
 
-- The runtime is compiled/minified.
+- The runtime is compiled/minified; an earlier React/TypeScript/Vite development backup exists at `Joenasriani/ascension`, but it has **not** been verified as equivalent to the current playable distribution.
 - There is no package manifest or source rebuild path in this snapshot.
 - Several runtime resources remain remote.
 - Full offline operation is not guaranteed on first launch.
