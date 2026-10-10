@@ -1,0 +1,27 @@
+name: One-click straight corridor browser test
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-click-corridor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install browser dependencies
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Start local game
+        run: python3 -m http.server 8080 --bind 127.0.0.1 >/tmp/ascension-corridor-server.log 2>&1 &
+      - name: Execute one-click browser test
+        run: node tests/straight-corridor-browser.cjs
+      - name: Archive movement evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: one-click-corridor-browser-evidence
+          path: corridor-evidence/
+          if-no-files-found: warn
