@@ -1,0 +1,28 @@
+name: Browser smoke evidence
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Start local static server
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/ascension-server.log 2>&1 &
+      - name: Run browser smoke check
+        run: node tests/browser-smoke.cjs
+      - name: Upload browser screenshots and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ascension-browser-evidence
+          path: browser-evidence/
+          if-no-files-found: warn
