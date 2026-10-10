@@ -29,12 +29,12 @@ const fs=require('fs');
   let attempts=0;
   outer:for(const first of spots)for(const second of spots)for(const third of spots){
    attempts++;
-   if(attempts>2200)break outer;
+   if(attempts>150)break outer;
    await page.evaluate(()=>window.__ASCENSION_QA_GO_TO_LEVEL(1));
-   await page.waitForTimeout(80);
+   await page.waitForTimeout(120);
    for(const p of [first,second,third]){
     await page.mouse.click(p.x,p.y);
-    await page.waitForTimeout(70);
+    await page.waitForTimeout(120);
    }
    if(await page.getByText('LEVEL COMPLETE').isVisible().catch(()=>false)){
     report.completed=true;
