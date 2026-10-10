@@ -101,3 +101,7 @@ Use precise language:
 - **unverified** – not tested in the current change.
 
 This keeps the repository trustworthy for future contributors.
+
+## Licensing contributions
+
+The project uses a **code-only MIT** license for original software whose rights allow it. See [LICENSE](LICENSE) and [LICENSE_SCOPE.md](LICENSE_SCOPE.md). Do not include third-party code, music, graphics, fonts, writing, or other assets unless you have the necessary rights and provide provenance, license notices and permissions. A pull request does not automatically authorize relicensing content you do not own. If your contribution includes original code, clearly state any applicable licensing terms and third-party dependencies. The compiled game distribution is not wholly licensed under MIT.
