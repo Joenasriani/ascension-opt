@@ -10,15 +10,17 @@ ASCENSION is a playable, browser-based 3D architectural puzzle game by Joe Nasr.
 
 ## Gameplay screenshots
 
-Real in-game screenshots captured on mobile. Tap an image to view it at full size.
+Real mobile gameplay screenshots. Select any thumbnail to view the original.
 
-| | |
-|:---:|:---:|
-| [![ASCENSION mobile gameplay screenshot 4](docs/screenshots/ascension_mobile_screenshot%20(4).jpg)](docs/screenshots/ascension_mobile_screenshot%20(4).jpg) | [![ASCENSION mobile gameplay screenshot 10](docs/screenshots/ascension_mobile_screenshot%20(10).jpg)](docs/screenshots/ascension_mobile_screenshot%20(10).jpg) |
-| [![ASCENSION mobile gameplay screenshot 17](docs/screenshots/ascension_mobile_screenshot%20(17).jpg)](docs/screenshots/ascension_mobile_screenshot%20(17).jpg) | [![ASCENSION mobile gameplay screenshot 24](docs/screenshots/ascension_mobile_screenshot%20(24).jpg)](docs/screenshots/ascension_mobile_screenshot%20(24).jpg) |
+<table><tr>
+<td align="center"><a href="docs/screenshots/ascension_mobile_screenshot%20(4).jpg"><img src="docs/screenshots/ascension_mobile_screenshot%20(4).jpg" alt="ASCENSION mobile gameplay screenshot 4" width="150"></a></td>
+<td align="center"><a href="docs/screenshots/ascension_mobile_screenshot%20(10).jpg"><img src="docs/screenshots/ascension_mobile_screenshot%20(10).jpg" alt="ASCENSION mobile gameplay screenshot 10" width="150"></a></td>
+<td align="center"><a href="docs/screenshots/ascension_mobile_screenshot%20(17).jpg"><img src="docs/screenshots/ascension_mobile_screenshot%20(17).jpg" alt="ASCENSION mobile gameplay screenshot 17" width="150"></a></td>
+<td align="center"><a href="docs/screenshots/ascension_mobile_screenshot%20(19).jpg"><img src="docs/screenshots/ascension_mobile_screenshot%20(19).jpg" alt="ASCENSION mobile gameplay screenshot 19" width="150"></a></td>
+<td align="center"><a href="docs/screenshots/ascension_mobile_screenshot%20(24).jpg"><img src="docs/screenshots/ascension_mobile_screenshot%20(24).jpg" alt="ASCENSION mobile gameplay screenshot 24" width="150"></a></td>
+</tr></table>
 
-[See all 10 mobile screenshots](docs/screenshots/)
-
+[View all 10 screenshots](docs/screenshots/)
 
 ### What makes it interesting
 
