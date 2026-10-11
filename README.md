@@ -8,6 +8,18 @@ ASCENSION is a playable, browser-based 3D architectural puzzle game by Joe Nasr.
 
 ![Repository verification](https://github.com/Joenasriani/ascension-opt/actions/workflows/verify.yml/badge.svg)
 
+## Gameplay screenshots
+
+Real in-game screenshots captured on mobile. Tap an image to view it at full size.
+
+| | |
+|:---:|:---:|
+| [![ASCENSION mobile gameplay screenshot 4](docs/screenshots/ascension_mobile_screenshot%20(4).jpg)](docs/screenshots/ascension_mobile_screenshot%20(4).jpg) | [![ASCENSION mobile gameplay screenshot 10](docs/screenshots/ascension_mobile_screenshot%20(10).jpg)](docs/screenshots/ascension_mobile_screenshot%20(10).jpg) |
+| [![ASCENSION mobile gameplay screenshot 17](docs/screenshots/ascension_mobile_screenshot%20(17).jpg)](docs/screenshots/ascension_mobile_screenshot%20(17).jpg) | [![ASCENSION mobile gameplay screenshot 24](docs/screenshots/ascension_mobile_screenshot%20(24).jpg)](docs/screenshots/ascension_mobile_screenshot%20(24).jpg) |
+
+[See all 10 mobile screenshots](docs/screenshots/)
+
+
 ### What makes it interesting
 
 - **Interactive route geometry:** connected block IDs are not enough; bridges and lifts must also physically align before the actor can cross.
