@@ -1,10 +1,20 @@
 # ASCENSION
 
-A browser-based, isometric-style 3D architectural puzzle game about finding a route through a shifting structure. Rotate bridges, raise lifts, and navigate interconnected blocks to reach the exit across 21 levels.
+**Rotate architecture. Align the path. Find your way upward.**
 
-[Play on itch.io](https://joenasr.itch.io/ascension) · [Open GitHub Pages build](https://joenasriani.github.io/ascension-opt/)
+ASCENSION is a playable, browser-based 3D architectural puzzle game by Joe Nasr. Navigate **21 levels** of floating structures, rotating bridges and vertical lifts. The route changes as the architecture moves.
+
+**[▶ PLAY ASCENSION – GitHub Pages](https://joenasriani.github.io/ascension-opt/)** · [Play on itch.io](https://joenasr.itch.io/ascension)
 
 ![Repository verification](https://github.com/Joenasriani/ascension-opt/actions/workflows/verify.yml/badge.svg)
+
+### What makes it interesting
+
+- **Interactive route geometry:** connected block IDs are not enough; bridges and lifts must also physically align before the actor can cross.
+- **One-click corridor movement:** the character visibly travels through intermediate blocks on a clear, directly aligned path, without automatic cornering or bypassing puzzle mechanics.
+- **Testable puzzle states:** reference graphs for 21 levels, modeled solvability checks, and targeted Chromium interaction tests document what has and has not been verified.
+
+**For developers:** This is a playable distribution and QA/reference repository, not a complete editable production source release. Read [the technical overview](#what-this-repository-is) and [contribution guide](CONTRIBUTING.md). Public visibility does not grant unrestricted reuse rights; see [Forking and reuse](#forking-and-reuse).
 
 ## How ASCENSION plays
 
