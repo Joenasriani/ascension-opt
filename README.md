@@ -16,8 +16,6 @@ ASCENSION is a playable, browser-based 3D architectural puzzle game by Joe Nasr.
 
 **For developers:** This is a playable distribution and QA/reference repository, not a complete editable production source release. Read [the technical overview](#what-this-repository-is) and [contribution guide](CONTRIBUTING.md). Public visibility does not grant unrestricted reuse rights; see [Forking and reuse](#forking-and-reuse).
 
-*Gameplay footage: not yet published in this repository. No video or screenshot has been represented as verified here.*
-
 ## How ASCENSION plays
 
 - **Walk along connected blocks.** Click an adjacent reachable block to move normally. For a clear, directly aligned corridor at the same elevation, clicking a farther reachable block once sends the actor through each intermediate block in sequence. Movement will not automatically turn corners, cross gaps, bypass disabled mechanisms, or ignore disconnected geometry.
