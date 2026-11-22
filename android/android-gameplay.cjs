@@ -98,10 +98,10 @@ async function attachWebView(report){
     if(!ok)throw Error('Native touch did not perform '+JSON.stringify(action)+' in level '+level.id);
    }
    await wait('Array.from(document.querySelectorAll("h2")).some(e=>e.textContent==="LEVEL COMPLETE")');item.completed=true;console.log('PASS native Android level '+level.id+' ('+actions.length+' actions)');capture('level-'+level.id+'-complete');
-   if(level.id===1){report.nativeSfx=captureNative('native-sfx.wav',sfxStart);await control('Turn music on');}
+   if(level.id===1){report.nativeSfx=captureNative('native-sfx.wav',sfxStart);}
    if(level.id<21){
     const box=await evaluate(`(()=>{const buttons=Array.from(document.querySelectorAll('button')).filter(e=>/^(CONTINUE|ASCEND)/i.test(e.textContent.trim())&&e.getBoundingClientRect().width>0);if(buttons.length!==1)return null;const b=buttons[0].getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2}})()`);
-    if(!box)throw Error('Next-level control not uniquely visible');await touch(box);
+    if(!box)throw Error('Next-level control not uniquely visible');await touch(box);if(level.id===1)await control('Turn music on');
    }
   }
   report.sfx=await evaluate('window.__ASC_AUDIO_QA');if(!report.sfx||report.sfx.destinationConnections<1||report.sfx.maxPeak<=0)throw Error('No nonzero synthesized SFX samples observed');
