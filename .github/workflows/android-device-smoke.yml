@@ -43,27 +43,13 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: |
-            set -e
-            adb install -r android/app/build/outputs/apk/debug/app-debug.apk
-            adb shell am start -n com.joenasr.ascensionvr/.MainActivity
-            sleep 20
-            adb shell screencap -p /sdcard/ascension-launch.png
-            adb pull /sdcard/ascension-launch.png ascension-launch.png
-            adb logcat -d > ascension-logcat.txt
-            python3 - <<'PY'
-            from pathlib import Path
-            data=Path("ascension-logcat.txt").read_text(errors="replace")
-            crashes=[x for x in data.splitlines() if "FATAL EXCEPTION" in x or "Process: com.joenasr.ascensionvr" in x]
-            if crashes: raise SystemExit("Android app crash detected: "+str(crashes[:5]))
-            assert Path("ascension-launch.png").stat().st_size>5000, "No Android screenshot"
-            print("Android app launched without a recorded fatal exception")
-            PY
+          script: bash android/emulator-smoke.sh
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: ascension-android-emulator-evidence
           path: |
-            ascension-launch.png
+            ascension-landing.png
+            ascension-level1.png
             ascension-logcat.txt
           if-no-files-found: warn
