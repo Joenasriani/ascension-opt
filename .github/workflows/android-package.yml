@@ -49,6 +49,7 @@ jobs:
           p.write_text(s)
           PY
           python3 android/patch-runtime-for-android.py
+          bash android/prepare-local-css.sh
       - name: Build Android debug APK and unsigned release AAB
         working-directory: android
         run: gradle --no-daemon :app:assembleDebug :app:bundleRelease
