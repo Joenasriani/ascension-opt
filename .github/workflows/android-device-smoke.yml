@@ -1,0 +1,69 @@
+name: ASCENSION Android emulator smoke test
+on:
+  push:
+    branches: [release/android-play-2026-11]
+    paths: ['.github/workflows/android-device-smoke.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  emulator-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Prepare application assets
+        run: |
+          mkdir -p android/app/src/main/assets
+          cp index.html android/app/src/main/assets/index.html
+          cp -R assets music icons android/app/src/main/assets/
+          sed -i '/qa-level-select.js/d' android/app/src/main/assets/index.html
+      - name: Build Android debug APK
+        working-directory: android
+        run: gradle --no-daemon :app:assembleDebug
+      - name: Enable KVM
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+      - name: Install and launch in Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: |
+            set -e
+            adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+            adb shell am start -n com.joenasr.ascensionvr/.MainActivity
+            sleep 20
+            adb shell screencap -p /sdcard/ascension-launch.png
+            adb pull /sdcard/ascension-launch.png ascension-launch.png
+            adb logcat -d > ascension-logcat.txt
+            python3 - <<'PY'
+            from pathlib import Path
+            data=Path("ascension-logcat.txt").read_text(errors="replace")
+            crashes=[x for x in data.splitlines() if "FATAL EXCEPTION" in x or "Process: com.joenasr.ascensionvr" in x]
+            if crashes: raise SystemExit("Android app crash detected: "+str(crashes[:5]))
+            assert Path("ascension-launch.png").stat().st_size>5000, "No Android screenshot"
+            print("Android app launched without a recorded fatal exception")
+            PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ascension-android-emulator-evidence
+          path: |
+            ascension-launch.png
+            ascension-logcat.txt
+          if-no-files-found: warn
