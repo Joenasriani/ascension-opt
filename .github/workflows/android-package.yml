@@ -1,0 +1,51 @@
+name: ASCENSION Android package (test builds)
+on:
+  push:
+    branches:
+      - release/android-play-2026-11
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Install Android SDK 36
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - name: Bundle current playable web distribution
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f assets/index-BjuLtVzX.js
+          test -f music/thelittlehero.mp3
+          mkdir -p android/app/src/main/assets
+          cp index.html android/app/src/main/assets/index.html
+          cp -R assets music icons android/app/src/main/assets/
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('android/app/src/main/assets/index.html')
+          s=p.read_text()
+          # Runtime stays byte-identical. Disable browser-only QA selector.
+          s=s.replace('<script defer src="./assets/qa-level-select.js"></script>', '')
+          p.write_text(s)
+          PY
+      - name: Build Android debug APK and unsigned release AAB
+        working-directory: android
+        run: gradle --no-daemon :app:assembleDebug :app:bundleRelease
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ascension-android-test-unsigned
+          path: |
+            android/app/build/outputs/apk/debug/*.apk
+            android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
