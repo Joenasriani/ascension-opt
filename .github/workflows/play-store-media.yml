@@ -1,0 +1,26 @@
+name: ASCENSION Google Play media pack
+on:
+  push:
+    branches:
+      - release/android-play-2026-11
+    paths:
+      - 'tools/create_play_media.py'
+      - '.github/workflows/play-store-media.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  media:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pillow==11.3.0
+      - run: python tools/create_play_media.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ascension-google-play-media-assets
+          path: play-store-assets/
+          if-no-files-found: error
