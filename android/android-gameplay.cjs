@@ -58,7 +58,7 @@ async function attachWebView(report){
   report.api=adb('shell','getprop','ro.build.version.sdk').trim();
   report.routes=adb('shell','ip','route');report.offline=!report.routes.includes('default');
   const state=()=>page.evaluate(()=>window.__ASC_ANDROID_STATE?.());
-  const touch=async p=>{const s=await state();adb('shell','input','tap',String(Math.round(p.x*480/s.width)),String(Math.round(p.y*854/s.height)));await pause(1300)};
+  const touch=async p=>{const s=await state();adb('shell','input','tap',String(Math.round(p.x*s.dpr)),String(Math.round(p.y*s.dpr)));await pause(1300)};
   const capture=name=>fs.writeFileSync('android-evidence/'+name+'.png',execFileSync('adb',['exec-out','screencap','-p'],{timeout:45000}));
   const media=async()=>{const proto=await browser.cdp('Runtime.evaluate',{expression:'HTMLAudioElement.prototype'});const objects=await browser.cdp('Runtime.queryObjects',{prototypeObjectId:proto.result.objectId});const result=await browser.cdp('Runtime.callFunctionOn',{objectId:objects.objects.objectId,functionDeclaration:'function(){return Array.from(this).map(a=>({src:a.currentSrc,paused:a.paused,currentTime:a.currentTime,readyState:a.readyState,volume:a.volume,error:a.error?.message||null}))}',returnByValue:true});return result.result.value};
   const control=async label=>{const p=await evaluate(`(()=>{const e=Array.from(document.querySelectorAll("button")).find(e=>e.getAttribute("aria-label")===${JSON.stringify(label)});if(!e)return null;const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`);if(!p)throw Error("Missing control "+label);await touch(p)};
@@ -76,6 +76,7 @@ async function attachWebView(report){
    for(const action of actions){
     let ok=false;
     for(let attempt=0;attempt<3;attempt++){
+     if(attempt){if(attempt===1)adb('shell','input','swipe','420','700','120','700','600');else adb('shell','input','swipe','420','550','420','730','600');await pause(1000);report.cameraGestures=(report.cameraGestures||0)+1;}
      s=await state();let p=await evaluate('window.__ASC_ANDROID_TARGET('+JSON.stringify(action.id)+','+JSON.stringify(action.kind)+')');
      for(let view=0;!p&&view<4;view++){adb('shell','input','swipe','420','700','120','700','600');await pause(1000);p=await evaluate('window.__ASC_ANDROID_TARGET('+JSON.stringify(action.id)+','+JSON.stringify(action.kind)+')');report.cameraGestures=(report.cameraGestures||0)+1;}
      if(!p)throw Error('Target remains occluded after native camera orbit: '+JSON.stringify(action));
