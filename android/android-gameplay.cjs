@@ -76,8 +76,10 @@ async function attachWebView(report){
    for(const action of actions){
     let ok=false;
     for(let attempt=0;attempt<3;attempt++){
-     s=await state();const p=s.points.find(p=>p.id===action.id&&p.kind===action.kind);if(!p)throw Error('Missing target '+JSON.stringify(action));
-     await touch({...p,x:p.x+(attempt===1?5:attempt===2?-5:0)});const after=await state();
+     s=await state();let p=await evaluate('window.__ASC_ANDROID_TARGET('+JSON.stringify(action.id)+','+JSON.stringify(action.kind)+')');
+     for(let view=0;!p&&view<4;view++){adb('shell','input','swipe','420','700','120','700','600');await pause(1000);p=await evaluate('window.__ASC_ANDROID_TARGET('+JSON.stringify(action.id)+','+JSON.stringify(action.kind)+')');report.cameraGestures=(report.cameraGestures||0)+1;}
+     if(!p)throw Error('Target remains occluded after native camera orbit: '+JSON.stringify(action));
+     await touch(p);const after=await state();
      ok=action.kind==='block'?after.current===action.id:((action.type==='ROTATOR'?after.blocks.find(b=>b.id===action.id).rotation:after.blocks.find(b=>b.id===action.id).sliderVal)||0)%2===action.value;
      item.actions.push({action,point:p,attempt,after:{current:after.current,blocks:after.blocks.map(b=>({id:b.id,rotation:b.rotation,sliderVal:b.sliderVal}))},pass:ok});if(ok)break;
     }
@@ -94,6 +96,6 @@ async function attachWebView(report){
   await wait('window.__ASC_ANDROID_STATE?.().level===21');report.lifecycle.push({check:'cold restart restores level 21',pass:true});
   const begin=await evaluate(`(()=>{const e=Array.from(document.querySelectorAll('button')).find(e=>e.textContent==='BEGIN JOURNEY');if(!e)return null;const b=e.getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2}})()`);if(!begin)throw Error('Cold restart start screen missing');await touch(begin);await pause(3000);capture('cold-restart-level21');
   console.log('PASS: completed all 21 levels through native Android touch input');
- }catch(e){report.errors.push(String(e.stack||e));console.error(e);process.exitCode=1;}
+ }catch(e){report.errors.push(String(e.stack||e));try{fs.writeFileSync('android-evidence/failure.png',execFileSync('adb',['exec-out','screencap','-p'],{timeout:45000}))}catch{}console.error(e);process.exitCode=1;}
  finally{fs.writeFileSync('android-evidence/gameplay-report.json',JSON.stringify(report,null,2));if(browser)await browser.close();}
 })();
