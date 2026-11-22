@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+adb shell settings put secure immersive_mode_confirmations confirmed
 adb shell am start -n com.joenasr.ascensionvr/.MainActivity
 sleep 17
 # Dismiss Android's first-use immersive-mode guidance
+adb shell input keyevent 66
 adb shell input tap 910 630
 sleep 3
 adb shell screencap -p /sdcard/ascension-landing.png
