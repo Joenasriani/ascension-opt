@@ -28,6 +28,7 @@ jobs:
           cp index.html android/app/src/main/assets/index.html
           cp -R assets music icons android/app/src/main/assets/
           sed -i '/qa-level-select.js/d' android/app/src/main/assets/index.html
+          python3 android/patch-runtime-for-android.py
       - name: Build Android debug APK
         working-directory: android
         run: gradle --no-daemon :app:assembleDebug
