@@ -1,0 +1,24 @@
+name: Export ASCENSION store source images
+on:
+  push:
+    branches: [release/android-play-2026-11]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify source image collection
+        run: |
+          test -f icons/icon-1024.png
+          test -f icons/maskable-1024.png
+          test "$(find docs/screenshots -iname '*.jpg' | wc -l)" -ge 10
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ASCENSION-original-icons-and-gameplay-screenshots
+          path: |
+            icons/
+            docs/screenshots/
+          if-no-files-found: error
