@@ -24,7 +24,7 @@ assert html.count(oldscript)==1
 html=html.replace(oldscript,'<link rel="stylesheet" href="./ascension-tailwind.css">',1)
 html=re.sub(r'<link rel="preconnect" href="https://fonts.googleapis.com">\\s*','',html)
 html=re.sub(r'<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\\s*','',html)
-html=re.sub(r'<link href="https://fonts.googleapis.com/css2\\?family=Montserrat:[^"]+" rel="stylesheet">','<link rel="stylesheet" href="./local-fonts.css">',html)
+html=html.replace('<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;600&display=swap" rel="stylesheet">','<link rel="stylesheet" href="./local-fonts.css">',1)
 index.write_text(html)
 assert 'cdn.tailwindcss.com' not in html
 assert 'local-fonts.css' in html
