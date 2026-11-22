@@ -27,11 +27,14 @@ function route(level){
  const report={kind:'Android native-touch gameplay',levels:[],errors:[],network:[],limits:['Debug build has read-only scene observations. No gameplay setters are invoked.','Audio output needs separate audible verification.']};
  let browser;
  try{
+  const appPid=adb('shell','pidof','com.joenasr.ascension').trim().split(/\s+/)[0];
+  if(!appPid)throw Error('ASCENSION process absent');
   let socket;
-  for(let i=0;i<20;i++){socket=adb('shell','cat','/proc/net/unix').split('\n').find(l=>l.includes('@webview_devtools_remote'));if(socket)break;await pause(1000)}
+  for(let i=0;i<20;i++){socket=adb('shell','cat','/proc/net/unix').split('\n').find(l=>l.trim().endsWith('@webview_devtools_remote_'+appPid));if(socket)break;await pause(1000)}
   if(!socket)throw Error('WebView debug socket unavailable');
   socket=socket.trim().split(/\s+/).pop().replace(/^@/,'');adb('forward','tcp:9222','localabstract:'+socket);
   const pages=await (await fetch('http://127.0.0.1:9222/json/list')).json();
+  report.webViewTargets=pages.map(p=>({type:p.type,url:p.url,title:p.title}));
   const target=pages.find(p=>p.type==='page'&&p.url.includes('appassets.androidplatform.net'));
   if(!target)throw Error('No local game WebView page');
   const ws=new WebSocket(target.webSocketDebuggerUrl);await new Promise((resolve,reject)=>{ws.onopen=resolve;ws.onerror=reject});
@@ -62,7 +65,7 @@ function route(level){
     }
     if(!ok)throw Error('Native touch did not perform '+JSON.stringify(action)+' in level '+level.id);
    }
-   await wait('Array.from(document.querySelectorAll("h2")).some(e=>e.textContent==="LEVEL COMPLETE")');item.completed=true;capture('level-'+level.id+'-complete');
+   await wait('Array.from(document.querySelectorAll("h2")).some(e=>e.textContent==="LEVEL COMPLETE")');item.completed=true;console.log('PASS native Android level '+level.id+' ('+actions.length+' actions)');capture('level-'+level.id+'-complete');
    if(level.id<21){
     const box=await evaluate(`(()=>{const buttons=Array.from(document.querySelectorAll('button')).filter(e=>/^(CONTINUE|ASCEND)/i.test(e.textContent.trim())&&e.getBoundingClientRect().width>0);if(buttons.length!==1)return null;const b=buttons[0].getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2}})()`);
     if(!box)throw Error('Next-level control not uniquely visible');await touch(box);

@@ -1,0 +1,8 @@
+.gradle/
+build/
+app/build/
+app/src/main/assets/
+__pycache__/
+*.p12
+*.jks
+*.keystore

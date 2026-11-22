@@ -1,4 +1,4 @@
-Ascension VR - Remote Dependency Report
+ASCENSION - Remote Dependency Report
 Generated: 2026-05-14
 
 Scope:

@@ -1,8 +1,8 @@
-# ASCENSION — Android / Trusted Web Activity Packaging
+# ASCENSION – historical Trusted Web Activity notes
 
-This document covers the Android packaging path for the web build in this repository.
+The current Google Play release uses the local WebView wrapper in `android/`, package `com.joenasr.ascension`, title ASCENSION, portrait orientation, API 36. See `ANDROID_PLAY_RELEASE_2026-11.md`. The TWA notes below are historical and must not be used to build the current release.
 
-The current Android approach uses a **Trusted Web Activity (TWA)** generated with Bubblewrap. The packaged application loads the HTTPS-hosted ASCENSION web build; it is not a separate native gameplay implementation.
+The historical Android proposal used a **Trusted Web Activity (TWA)** generated with Bubblewrap. The packaged application loads the HTTPS-hosted ASCENSION web build; it is not a separate native gameplay implementation.
 
 ## Packaging files
 
@@ -23,7 +23,7 @@ The repository currently records the following packaging values:
 
 ```text
 Package ID:     com.joenasr.ascension
-App name:       Ascension VR
+App name:       ASCENSION
 Launcher name:  Ascension
 Display mode:   fullscreen
 Orientation:    landscape
