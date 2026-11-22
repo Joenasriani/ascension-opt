@@ -12,4 +12,9 @@ s=s.replace(a,'"group",{userData:{ascBlock:r.id,top:C[1]/2+.03},ref:l,position:[
 a='"group",{position:L,rotation:F,onClick:A,'
 assert s.count(a)==1
 s=s.replace(a,'"group",{userData:{ascHandle:r.id},position:L,rotation:F,onClick:A,')
+s="""window.__ASC_AUDIO_QA={destinationConnections:0,maxPeak:0};
+if(window.AudioNode&&window.AudioDestinationNode){const original=AudioNode.prototype.connect;
+AudioNode.prototype.connect=function(target,...args){const result=original.call(this,target,...args);
+if(target instanceof AudioDestinationNode){window.__ASC_AUDIO_QA.destinationConnections++;const analyser=this.context.createAnalyser();analyser.fftSize=256;original.call(this,analyser);const data=new Float32Array(256);const timer=setInterval(()=>{analyser.getFloatTimeDomainData(data);for(const v of data)window.__ASC_AUDIO_QA.maxPeak=Math.max(window.__ASC_AUDIO_QA.maxPeak,Math.abs(v))},20);setTimeout(()=>clearInterval(timer),2500)}return result}}
+"""+s
 p.write_text(s)

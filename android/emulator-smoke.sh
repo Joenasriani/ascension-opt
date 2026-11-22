@@ -49,6 +49,9 @@ run_adb wait-for-device
 run_adb shell wm size 480x854
 run_adb shell wm density 187
 sleep 30
+run_adb shell svc wifi disable
+run_adb shell svc data disable
+run_adb shell ip route > android-evidence/network-routes.txt
 run_adb logcat -c
 run_adb install -r android/app/build/outputs/apk/debug/app-debug.apk
 run_adb shell settings put secure immersive_mode_confirmations confirmed

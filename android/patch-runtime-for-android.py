@@ -29,3 +29,16 @@ index.write_text(html)
 assert 'cdn.tailwindcss.com' not in html
 assert 'local-fonts.css' in html
 print("PASS: Android HTML now uses bundled fonts and CSS")
+
+# Keep the last opened level across process death/cold starts. Previously the
+# Android game initialized its React level index to zero on every new launch.
+bundle_source=bundle.read_text()
+old='K4=()=>{const[r,t]=Yt.useState(0),'
+assert bundle_source.count(old)==1, 'Unknown level-state initializer'
+new='K4=()=>{const[r,t]=Yt.useState(()=>{try{const v=Number(localStorage.getItem("ascension.android.level"));return Number.isInteger(v)&&v>=0&&v<_b.length?v:0}catch{return 0}}),'
+bundle_source=bundle_source.replace(old,new,1)
+old='x=Yt.useRef(null),v=_b[r];Yt.useEffect(()=>{window.__ASCENSION_LEVEL_COUNT='
+assert bundle_source.count(old)==1, 'Unknown level-state persistence insertion'
+new='x=Yt.useRef(null),v=_b[r];Yt.useEffect(()=>{try{localStorage.setItem("ascension.android.level",String(r))}catch{}},[r]);Yt.useEffect(()=>{window.__ASCENSION_LEVEL_COUNT='
+bundle.write_text(bundle_source.replace(old,new,1))
+print('PASS: Android level checkpoint survives cold start; storage failure remains non-blocking')

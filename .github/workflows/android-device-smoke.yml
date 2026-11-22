@@ -8,6 +8,10 @@ permissions:
   contents: read
 jobs:
   emulator-smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [35, 36]
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
@@ -40,7 +44,7 @@ jobs:
       - name: Install and launch in Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: ${{ matrix.api }}
           target: google_apis
           arch: x86_64
           profile: pixel_2
@@ -53,7 +57,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ascension-android-emulator-evidence
+          name: ascension-android-emulator-evidence-api-${{ matrix.api }}
           path: |
             android-evidence/
           if-no-files-found: warn
