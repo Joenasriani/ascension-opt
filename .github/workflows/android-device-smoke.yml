@@ -42,19 +42,12 @@ jobs:
       - name: Enable KVM
         run: |
           if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
-      - name: Prepare native audio output
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq pulseaudio ffmpeg
-          pulseaudio --start --exit-idle-time=-1
-          pactl load-module module-null-sink sink_name=ascension_test
-          pactl set-default-sink ascension_test
-          pactl list short sinks
       - name: Install and launch in Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         env:
-          QEMU_AUDIO_DRV: pa
-          PULSE_SINK: ascension_test
+          QEMU_AUDIO_DRV: wav
+          QEMU_WAV_PATH: /tmp/ascension-native-output.wav
+          ASCENSION_NATIVE_AUDIO: /tmp/ascension-native-output.wav
         with:
           api-level: ${{ matrix.api }}
           target: google_apis
