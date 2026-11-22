@@ -6,7 +6,7 @@
 - Android package ID: com.joenasr.ascensionvr (existing repository identity – verify Play Console availability before first upload)
 - Android version: 1.0.0 (code 1)
 - Free; no advertising SDK has been added to the Android wrapper
-- Orientation: landscape
+- Orientation: responsive (no forced Android orientation)
 - Release: NOT YET APPROVED – do not upload unsigned AAB or debug APK as production
 
 ## Short description (maximum 80 characters)
@@ -23,7 +23,7 @@ Features:
 - 21 levels featuring connected paths, rotating bridges, and vertical lifts
 - Interactive 3D architecture
 - Atmospheric music and sound effects
-- Landscape gameplay with touch-based controls
+- Touch-based gameplay with responsive layout
 - Simple objective: find a route from the start to the exit
 
 A quiet puzzle adventure, one structure at a time.
