@@ -8,7 +8,7 @@ permissions:
   contents: read
 jobs:
   emulator-smoke:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
@@ -42,16 +42,17 @@ jobs:
           api-level: 35
           target: google_apis
           arch: x86_64
-          profile: pixel_6
+          profile: pixel_2
+          ram-size: 2048M
+          heap-size: 256M
+          disk-size: 4096M
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -cores 2 -memory 2048 -no-boot-anim
           script: bash android/emulator-smoke.sh
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: ascension-android-emulator-evidence
           path: |
-            ascension-landing.png
-            ascension-level1.png
-            ascension-logcat.txt
+            android-evidence/
           if-no-files-found: warn
