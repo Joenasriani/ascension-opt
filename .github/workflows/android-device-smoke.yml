@@ -26,6 +26,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
+          cache-read-only: false
       - name: Prepare application assets
         run: |
           mkdir -p android/app/src/main/assets
@@ -41,8 +42,19 @@ jobs:
       - name: Enable KVM
         run: |
           if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+      - name: Prepare native audio output
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq pulseaudio ffmpeg
+          pulseaudio --start --exit-idle-time=-1
+          pactl load-module module-null-sink sink_name=ascension_test
+          pactl set-default-sink ascension_test
+          pactl list short sinks
       - name: Install and launch in Android emulator
         uses: reactivecircus/android-emulator-runner@v2
+        env:
+          QEMU_AUDIO_DRV: pa
+          PULSE_SINK: ascension_test
         with:
           api-level: ${{ matrix.api }}
           target: google_apis
@@ -52,7 +64,7 @@ jobs:
           heap-size: 256M
           disk-size: 4096M
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader -no-snapshot -noaudio -cores 2 -memory 3072 -no-boot-anim
+          emulator-options: -no-window -gpu swiftshader -no-snapshot -cores 2 -memory 3072 -no-boot-anim
           script: bash android/emulator-smoke.sh
       - uses: actions/upload-artifact@v4
         if: always()
