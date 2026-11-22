@@ -2,10 +2,10 @@ plugins {
     id 'com.android.application'
 }
 android {
-    namespace 'com.joenasr.ascensionvr'
+    namespace 'com.joenasr.ascension'
     compileSdk 36
     defaultConfig {
-        applicationId 'com.joenasr.ascensionvr'
+        applicationId 'com.joenasr.ascension'
         minSdk 26
         targetSdk 36
         versionCode 1

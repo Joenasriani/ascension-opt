@@ -1,4 +1,4 @@
-package com.joenasr.ascensionvr;
+package com.joenasr.ascension;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -25,6 +25,7 @@ public class MainActivity extends Activity {
     WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
       .addPathHandler("/assets/", new AssetsPathHandler(this))
       .build();
+    WebView.setWebContentsDebuggingEnabled((getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0);
     webView = new WebView(this);
     webView.getSettings().setJavaScriptEnabled(true);
     webView.getSettings().setDomStorageEnabled(true);

@@ -11,7 +11,7 @@ collect_diagnostics() {
   trap - EXIT
   run_adb logcat -d > android-evidence/logcat.txt 2>&1 || true
   run_adb shell dumpsys activity activities > android-evidence/activities.txt 2>&1 || true
-  run_adb shell dumpsys meminfo com.joenasr.ascensionvr > android-evidence/memory.txt 2>&1 || true
+  run_adb shell dumpsys meminfo com.joenasr.ascension > android-evidence/memory.txt 2>&1 || true
   run_adb shell df -h > android-evidence/storage.txt 2>&1 || true
   run_adb shell dumpsys SurfaceFlinger > android-evidence/surfaceflinger.txt 2>&1 || true
   exit "$status"
@@ -46,28 +46,31 @@ PY
   return 1
 }
 run_adb wait-for-device
-run_adb shell wm size 720x1280
-run_adb shell wm density 280
+run_adb shell wm size 480x854
+run_adb shell wm density 187
+sleep 30
 run_adb logcat -c
 run_adb install -r android/app/build/outputs/apk/debug/app-debug.apk
 run_adb shell settings put secure immersive_mode_confirmations confirmed
-run_adb shell am start -W -n com.joenasr.ascensionvr/.MainActivity
+run_adb shell am start -W -n com.joenasr.ascension/.MainActivity
 sleep 20
 capture landing
 # Coordinates refer to the explicit 720x1280 portrait test viewport.
-run_adb shell input tap 360 710
+run_adb shell input tap 240 474
 sleep 15
 capture level1
-run_adb shell pidof com.joenasr.ascensionvr > android-evidence/app-pid.txt
+node android/android-gameplay.cjs
+run_adb shell pidof com.joenasr.ascension > android-evidence/app-pid.txt
 run_adb shell input keyevent KEYCODE_HOME
 sleep 2
-run_adb shell am start -W -n com.joenasr.ascensionvr/.MainActivity
+run_adb shell am start -W -n com.joenasr.ascension/.MainActivity
 sleep 5
 capture resumed
 run_adb logcat -d > android-evidence/logcat.txt
 python3 - <<'PY'
 from pathlib import Path
 s=Path('android-evidence/logcat.txt').read_text(errors='replace')
+assert 'ANR in ' not in s, 'ANR found; inspect logcat'
 assert 'FATAL EXCEPTION' not in s, 'Fatal exception found; inspect logcat'
 assert Path('android-evidence/app-pid.txt').read_text().strip(), 'App process absent'
 print('PASS: process, valid screenshots, background/resume scenario completed. Gameplay requires evidence review; this is not a full playthrough.')

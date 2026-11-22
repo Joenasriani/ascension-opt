@@ -3,7 +3,7 @@
 ## Identity
 - Store title: ASCENSION
 - Developer account: questrequestvr@gmail.com
-- Android package ID: com.joenasr.ascensionvr (existing repository identity – verify Play Console availability before first upload)
+- Android package ID: com.joenasr.ascension (existing repository identity – verify Play Console availability before first upload)
 - Android version: 1.0.0 (code 1)
 - Free; no advertising SDK has been added to the Android wrapper
 - Orientation: responsive (no forced Android orientation)

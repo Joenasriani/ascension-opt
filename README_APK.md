@@ -22,7 +22,7 @@ The current Android approach uses a **Trusted Web Activity (TWA)** generated wit
 The repository currently records the following packaging values:
 
 ```text
-Package ID:     com.joenasr.ascensionvr
+Package ID:     com.joenasr.ascension
 App name:       Ascension VR
 Launcher name:  Ascension
 Display mode:   fullscreen

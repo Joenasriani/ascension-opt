@@ -2,7 +2,7 @@ name: ASCENSION Android emulator smoke test
 on:
   push:
     branches: [release/android-play-2026-11]
-    paths: ['.github/workflows/android-device-smoke.yml', 'android/emulator-smoke.sh', 'android/patch-runtime-for-android.py', 'android/prepare-local-css.sh']
+    paths: ['.github/workflows/android-device-smoke.yml', 'android/emulator-smoke.sh', 'android/patch-runtime-for-android.py', 'android/prepare-local-css.sh', 'android/prepare-qa-observer.py', 'android/android-gameplay.cjs', 'android/app/**']
   workflow_dispatch:
 permissions:
   contents: read
@@ -30,6 +30,9 @@ jobs:
           sed -i '/qa-level-select.js/d' android/app/src/main/assets/index.html
           python3 android/patch-runtime-for-android.py
           bash android/prepare-local-css.sh
+          python3 android/prepare-qa-observer.py
+      - name: Install WebView test driver
+        run: npm install --no-save playwright@1.56.1
       - name: Build Android debug APK
         working-directory: android
         run: gradle --no-daemon :app:assembleDebug
@@ -40,14 +43,14 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
-          target: google_apis
+          target: aosp_atd
           arch: x86_64
           profile: pixel_2
-          ram-size: 2048M
+          ram-size: 3072M
           heap-size: 256M
           disk-size: 4096M
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -cores 2 -memory 2048 -no-boot-anim
+          emulator-options: -no-window -gpu swiftshader -no-snapshot -noaudio -cores 2 -memory 3072 -no-boot-anim
           script: bash android/emulator-smoke.sh
       - uses: actions/upload-artifact@v4
         if: always()
