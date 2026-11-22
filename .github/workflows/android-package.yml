@@ -3,6 +3,13 @@ on:
   push:
     branches:
       - release/android-play-2026-11
+    paths:
+      - 'android/**'
+      - 'index.html'
+      - 'assets/**'
+      - 'music/**'
+      - 'icons/**'
+      - '.github/workflows/android-package.yml'
   workflow_dispatch:
 permissions:
   contents: read
