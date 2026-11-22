@@ -19,7 +19,7 @@ d=ImageDraw.Draw(canvas)
 for y in range(h):
     t=y/(h-1)
     d.line((0,y,w,y),fill=(int(246-25*t),int(228+11*t),int(242+10*t)))
-shot=Image.open(shots[0]).convert("RGB")
+shot=Image.open(shots[4]).convert("RGB")
 shot.thumbnail((500,438),Image.Resampling.LANCZOS)
 plate=Image.new("RGB",(536,466),(252,253,255))
 xx=(536-shot.width)//2
