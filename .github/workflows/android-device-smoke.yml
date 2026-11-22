@@ -2,7 +2,7 @@ name: ASCENSION Android emulator smoke test
 on:
   push:
     branches: [release/android-play-2026-11]
-    paths: ['.github/workflows/android-device-smoke.yml']
+    paths: ['.github/workflows/android-device-smoke.yml', 'android/emulator-smoke.sh']
   workflow_dispatch:
 permissions:
   contents: read
