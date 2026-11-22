@@ -31,8 +31,6 @@ jobs:
           python3 android/patch-runtime-for-android.py
           bash android/prepare-local-css.sh
           python3 android/prepare-qa-observer.py
-      - name: Install WebView test driver
-        run: npm install --no-save playwright@1.56.1
       - name: Build Android debug APK
         working-directory: android
         run: gradle --no-daemon :app:assembleDebug
@@ -43,7 +41,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
-          target: aosp_atd
+          target: google_apis
           arch: x86_64
           profile: pixel_2
           ram-size: 3072M
