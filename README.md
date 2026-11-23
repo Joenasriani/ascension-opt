@@ -201,7 +201,7 @@ However, **no license file is currently present in this repository**. Do not ass
 ## Known constraints
 
 - The runtime is compiled/minified; an earlier React/TypeScript/Vite development backup exists at `Joenasriani/ascension`, but it has **not** been verified as equivalent to the current playable distribution.
-- The editable web source/package manifest is absent; Android packaging uses the checked-in Gradle wrapper project.
+- The editable web source/package manifest is absent; Android packaging uses the checked-in Gradle project.
 - The browser distribution retains remote resources; Android bundles its game code, CSS, fonts and music.
 - Browser offline operation is not guaranteed on first launch. The Android release is tested from a fresh install without a default network route.
 - PWA/TWA deployment requires HTTPS outside localhost.

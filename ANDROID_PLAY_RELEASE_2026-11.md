@@ -38,7 +38,7 @@ The existing feature graphic is RGB PNG, 1024x500. Preserve approved artwork; ne
 Use only the existing private ASCENSION upload keystore. No key was generated or rotated.
 Expected certificate SHA-256:
 98:67:BD:42:69:0A:0C:DA:93:40:08:BB:77:70:D5:47:AC:38:E0:B4:CD:FD:F1:24:37:A9:7C:00:CF:65:3E:E7
-The private Drive backup contains the encrypted P12 only. Its original password has not been found in accessible release history.
+The private Drive backup contains the encrypted P12. Its original password was recovered from an existing private ASCENSION release record. The corrected AAB is now signed and its JAR signature verifies with the exact pinned certificate. A universal release APK derived from it verifies under APK signing schemes v2 and v3 with the same original certificate. No credential was uploaded to GitHub.
 android/sign-release.py checks this fingerprint before signing and verifies the AAB afterward; credentials must stay outside Git.
 Never present an unsigned AAB or debug APK as a Play upload release.
 

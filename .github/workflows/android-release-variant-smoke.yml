@@ -1,0 +1,92 @@
+name: ASCENSION release variant smoke test
+on:
+  push:
+    branches: [release/android-play-2026-11]
+    paths: ['.github/workflows/android-release-variant-smoke.yml', 'android/release-variant-smoke.py']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  emulator-smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [36]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+          cache-read-only: false
+      - name: Install Android SDK 36
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - name: Prepare application assets
+        run: |
+          mkdir -p android/app/src/main/assets
+          cp index.html android/app/src/main/assets/index.html
+          cp -R assets music icons android/app/src/main/assets/
+          sed -i '/qa-level-select.js/d' android/app/src/main/assets/index.html
+          python3 android/patch-runtime-for-android.py
+          bash android/prepare-local-css.sh
+      - name: Build and QA-sign release variant
+        working-directory: android
+        run: |
+          gradle --no-daemon :app:assembleDebug :app:assembleRelease
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" sign --ks "$HOME/.android/debug.keystore" --ks-key-alias androiddebugkey --ks-pass pass:android --key-pass pass:android --out app/build/outputs/apk/release/app-release-qa.apk app/build/outputs/apk/release/app-release-unsigned.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs app/build/outputs/apk/release/app-release-qa.apk
+          "$ANDROID_HOME/build-tools/36.0.0/aapt2" dump badging app/build/outputs/apk/release/app-release-qa.apk > release-badging.txt
+          if rg -q application-debuggable release-badging.txt; then exit 1; fi
+      - name: Enable KVM
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+      - name: Configure isolated native audio loopback
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y pulseaudio pulseaudio-utils xvfb libxcb-cursor0 tesseract-ocr
+          pulseaudio --start --exit-idle-time=-1 --log-target=file:/tmp/ascension-pulse.log
+          pactl load-module module-native-protocol-unix socket=/tmp/ascension-pulse.sock auth-anonymous=1
+          pactl load-module module-null-sink sink_name=ascension_ci rate=48000 channels=2
+          pactl -s unix:/tmp/ascension-pulse.sock set-default-sink ascension_ci
+          pactl -s unix:/tmp/ascension-pulse.sock info
+          Xvfb :99 -screen 0 1280x1024x24 -nolisten tcp </dev/null >/tmp/ascension-xvfb.log 2>&1 &
+      - name: Install and launch in Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          DISPLAY: ':99'
+          QT_X11_NO_MITSHM: '1'
+          QEMU_AUDIO_DRV: pa
+          QEMU_PA_SERVER: unix:/tmp/ascension-pulse.sock
+          QEMU_PA_SINK: ascension_ci
+          QEMU_AUDIO_IN_DRV: none
+          PULSE_SERVER: unix:/tmp/ascension-pulse.sock
+          ASCENSION_QA_SCOPE: ${{ contains(github.event.head_commit.message, '[audio-only]') && 'audio' || 'full' }}
+          ASCENSION_NATIVE_AUDIO: /tmp/ascension-native-output.pcm
+          ASCENSION_NATIVE_AUDIO_FORMAT: s16le
+        with:
+          api-level: ${{ matrix.api }}
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          ram-size: 3072M
+          heap-size: 256M
+          disk-size: 4096M
+          disable-animations: true
+          pre-emulator-launch-script: sed -i 's/^hw.audioInput=.*/hw.audioInput=no/' "$ANDROID_AVD_HOME/test.avd/config.ini"
+          emulator-options: -gpu swiftshader -no-snapshot -cores 2 -memory 3072 -no-boot-anim
+          script: python3 android/release-variant-smoke.py android/app/build/outputs/apk/release/app-release-qa.apk
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ascension-release-variant-evidence-api-${{ matrix.api }}
+          path: |
+            release-variant-evidence/
+          if-no-files-found: warn
