@@ -26,15 +26,7 @@ public class MainActivity extends Activity {
       .addPathHandler("/assets/", new AssetsPathHandler(this))
       .build();
     WebView.setWebContentsDebuggingEnabled((getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0);
-    webView = new WebView(this) {
-      @Override protected void onScrollChanged(int x, int y, int oldX, int oldY) {
-        super.onScrollChanged(x, y, oldX, oldY);
-        if (x != 0 || y != 0) scrollTo(0, 0);
-      }
-    };
-    webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-    webView.setHorizontalScrollBarEnabled(false);
-    webView.setVerticalScrollBarEnabled(false);
+    webView = new WebView(this);
     webView.getSettings().setJavaScriptEnabled(true);
     webView.getSettings().setDomStorageEnabled(true);
     webView.getSettings().setMediaPlaybackRequiresUserGesture(true);

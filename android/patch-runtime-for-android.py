@@ -32,7 +32,6 @@ approved_icon=Path(__file__).resolve().parents[1] / 'android/app/src/main/res/dr
 copyfile(approved_icon,index.parent / 'approved-icon.png')
 assert '<link rel="icon"' not in html
 html=html.replace('</head>','<link rel="icon" type="image/png" href="./approved-icon.png">\n</head>',1)
-html=html.replace('</head>', '<style>html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none}body{position:fixed;inset:0}#root{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;touch-action:none}</style>\n</head>',1)
 index.write_text(html)
 assert 'cdn.tailwindcss.com' not in html
 assert 'local-fonts.css' in html

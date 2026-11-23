@@ -58,7 +58,7 @@ async function attachWebView(report){
   report.api=adb('shell','getprop','ro.build.version.sdk').trim();
   report.routes=adb('shell','ip','route');report.offline=!report.routes.includes('default');
   const state=()=>page.evaluate(()=>window.__ASC_ANDROID_STATE?.());
-  const stableTarget=async action=>{let last=null,stable=0;for(let k=0;k<32;k++){const st=await state(),v=st.viewport; if(v&&(Math.abs(v.scale-1)>.01||Math.abs(v.offsetLeft)>1||Math.abs(v.offsetTop)>1||Math.abs(v.scrollX)>1||Math.abs(v.scrollY)>1))throw Error('Android page viewport shifted: '+JSON.stringify(v));const p=st.points.find(p=>p.id===action.id&&p.kind===action.kind);if(p&&last&&Math.hypot(p.x-last.x,p.y-last.y)<.15)stable++;else stable=0;if(stable>=2)return evaluate('window.__ASC_ANDROID_TARGET('+JSON.stringify(action.id)+','+JSON.stringify(action.kind)+')');last=p;await pause(250)}throw Error('Camera/target did not settle: '+JSON.stringify(action))};
+  const stableTarget=async action=>{let last=null,stable=0;for(let k=0;k<80;k++){const st=await state(),v=st.viewport; if(v&&(Math.abs(v.scale-1)>.01||Math.abs(v.offsetLeft)>1||Math.abs(v.offsetTop)>1||Math.abs(v.scrollX)>1||Math.abs(v.scrollY)>1))throw Error('Android page viewport shifted: '+JSON.stringify(v));const p=st.points.find(p=>p.id===action.id&&p.kind===action.kind);if(p&&last&&Math.hypot(p.x-last.x,p.y-last.y)<.75)stable++;else stable=0;if(stable>=1)return evaluate('window.__ASC_ANDROID_TARGET('+JSON.stringify(action.id)+','+JSON.stringify(action.kind)+')');last=p;await pause(250)}throw Error('Camera/target did not settle: '+JSON.stringify(action))};
   const touch=async p=>{const s=await state();adb('shell','input','tap',String(Math.round(p.x*s.dpr)),String(Math.round(p.y*s.dpr)));await pause(1300)};
   const capture=name=>fs.writeFileSync('android-evidence/'+name+'.png',execFileSync('adb',['exec-out','screencap','-p'],{timeout:45000}));
   const media=async()=>{const proto=await browser.cdp('Runtime.evaluate',{expression:'HTMLAudioElement.prototype'});const objects=await browser.cdp('Runtime.queryObjects',{prototypeObjectId:proto.result.objectId});const result=await browser.cdp('Runtime.callFunctionOn',{objectId:objects.objects.objectId,functionDeclaration:'function(){return Array.from(this).map(a=>({src:a.currentSrc,paused:a.paused,currentTime:a.currentTime,readyState:a.readyState,volume:a.volume,error:a.error?.message||null}))}',returnByValue:true});return result.result.value};
@@ -127,8 +127,8 @@ async function attachWebView(report){
   const restored=report.scope==='audio'?1:21;await wait('window.__ASC_ANDROID_STATE?.().level==='+restored);report.lifecycle.push({check:'cold restart restores level '+restored,pass:true});
   const begin=await evaluate(`(()=>{const e=Array.from(document.querySelectorAll('button')).find(e=>e.textContent==='BEGIN JOURNEY');if(!e)return null;const b=e.getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2}})()`);if(!begin)throw Error('Cold restart start screen missing');await touch(begin);await pause(3000);capture('cold-restart-level'+restored);
   if(report.scope==='audio'){
-   for(let k=0;k<2;k++){adb('shell','input','swipe','420','700','120','700','600');await pause(1000);await stableTarget({kind:'block',id:'start'});}
-   report.cameraViewport=(await state()).viewport;capture('viewport-after-native-camera-gestures');
+   for(let k=0;k<2;k++){adb('shell','input','swipe','420','700','120','700','600');await pause(2500);}
+   report.cameraViewport=(await state()).viewport;if(Object.entries(report.cameraViewport).some(([k,v])=>Math.abs(v-(k==='scale'?1:0))>.01))throw Error('Page viewport shifted during camera orbit');capture('viewport-after-native-camera-gestures');
   }
   if(report.scope==='full'){
    adb('shell','wm','size','480x1040');await pause(3000);

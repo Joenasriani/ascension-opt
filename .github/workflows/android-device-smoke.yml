@@ -61,7 +61,8 @@ jobs:
           QEMU_PA_SERVER: unix:/tmp/ascension-pulse.sock
           QEMU_PA_SINK: ascension_ci
           QEMU_AUDIO_DAC_FIXED_FREQ: 48000
-          QEMU_AUDIO_IN_DRV: none
+          QEMU_PA_SOURCE: ascension_ci.monitor
+          QEMU_AUDIO_ADC_FIXED_FREQ: 48000
           PULSE_SERVER: unix:/tmp/ascension-pulse.sock
           ASCENSION_QA_SCOPE: ${{ contains(github.event.head_commit.message, '[audio-only]') && 'audio' || 'full' }}
           ASCENSION_NATIVE_AUDIO: /tmp/ascension-native-output.pcm
@@ -75,8 +76,17 @@ jobs:
           heap-size: 256M
           disk-size: 4096M
           disable-animations: true
-          pre-emulator-launch-script: sed -i 's/^hw.audioInput=.*/hw.audioInput=no/' "$ANDROID_AVD_HOME/test.avd/config.ini"
-          emulator-options: -gpu swiftshader -no-snapshot -cores 2 -memory 3072 -no-boot-anim
+          pre-emulator-launch-script: |
+            python3 - <<'PYAVD'
+            import os
+            from pathlib import Path
+            p=Path(os.environ['ANDROID_AVD_HOME'])/'test.avd/config.ini'
+            output=Path('android-evidence');output.mkdir(exist_ok=True)
+            s=p.read_text();(output/'avd-before-audio.ini').write_text(s)
+            s='\n'.join(line for line in s.splitlines() if not line.startswith(('hw.audioInput=','hw.audioOutput=')))+'\nhw.audioInput=yes\nhw.audioOutput=yes\n'
+            p.write_text(s);(output/'avd-effective-audio.ini').write_text(s)
+            PYAVD
+          emulator-options: -verbose -gpu swiftshader -no-snapshot -cores 2 -memory 3072 -no-boot-anim
           script: bash android/emulator-smoke.sh
       - uses: actions/upload-artifact@v4
         if: always()
