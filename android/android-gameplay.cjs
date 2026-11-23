@@ -31,7 +31,7 @@ async function attachWebView(report){
   for(let i=0;i<20;i++){socket=adb('shell','cat','/proc/net/unix').split('\n').find(l=>l.trim().endsWith('@webview_devtools_remote_'+appPid));if(socket)break;await pause(1000)}
   if(!socket)throw Error('WebView debug socket unavailable');
   socket=socket.trim().split(/\s+/).pop().replace(/^@/,'');adb('forward','tcp:9222','localabstract:'+socket);
-  let pages;for(let attempt=0;attempt<3;attempt++){try{pages=await (await fetch('http://127.0.0.1:9222/json/list',{signal:AbortSignal.timeout(10000)})).json();break}catch(e){if(attempt===2)throw e;await pause(1000)}}
+  let pages;for(let attempt=0;attempt<6;attempt++){try{pages=await (await fetch('http://127.0.0.1:9222/json/list',{signal:AbortSignal.timeout(10000)})).json();break}catch(e){if(attempt===2)throw e;await pause(1000)}}
   console.log('QA: inspected ASCENSION debug targets');
   report.webViewTargets=pages.map(p=>({type:p.type,url:p.url,title:p.title}));
   const target=pages.find(p=>p.type==='page'&&p.url.includes('appassets.androidplatform.net'));
@@ -58,6 +58,7 @@ async function attachWebView(report){
   report.api=adb('shell','getprop','ro.build.version.sdk').trim();
   report.routes=adb('shell','ip','route');report.offline=!report.routes.includes('default');
   const state=()=>page.evaluate(()=>window.__ASC_ANDROID_STATE?.());
+  const stableTarget=async action=>{let last=null,stable=0;for(let k=0;k<32;k++){const st=await state(),v=st.viewport; if(v&&(Math.abs(v.scale-1)>.01||Math.abs(v.offsetLeft)>1||Math.abs(v.offsetTop)>1||Math.abs(v.scrollX)>1||Math.abs(v.scrollY)>1))throw Error('Android page viewport shifted: '+JSON.stringify(v));const p=st.points.find(p=>p.id===action.id&&p.kind===action.kind);if(p&&last&&Math.hypot(p.x-last.x,p.y-last.y)<.15)stable++;else stable=0;if(stable>=2)return evaluate('window.__ASC_ANDROID_TARGET('+JSON.stringify(action.id)+','+JSON.stringify(action.kind)+')');last=p;await pause(250)}throw Error('Camera/target did not settle: '+JSON.stringify(action))};
   const touch=async p=>{const s=await state();adb('shell','input','tap',String(Math.round(p.x*s.dpr)),String(Math.round(p.y*s.dpr)));await pause(1300)};
   const capture=name=>fs.writeFileSync('android-evidence/'+name+'.png',execFileSync('adb',['exec-out','screencap','-p'],{timeout:45000}));
   const media=async()=>{const proto=await browser.cdp('Runtime.evaluate',{expression:'HTMLAudioElement.prototype'});const objects=await browser.cdp('Runtime.queryObjects',{prototypeObjectId:proto.result.objectId});const result=await browser.cdp('Runtime.callFunctionOn',{objectId:objects.objects.objectId,functionDeclaration:'function(){return Array.from(this).map(a=>({src:a.currentSrc,paused:a.paused,currentTime:a.currentTime,readyState:a.readyState,volume:a.volume,error:a.error?.message||null}))}',returnByValue:true});return result.result.value};
@@ -95,15 +96,15 @@ async function attachWebView(report){
     if(++actionCount>120)throw Error("Native route recovery exceeded 120 actions in level "+level.id);
     const action=remaining[0];
     let ok=false;
-    for(let attempt=0;attempt<3;attempt++){
-     if(attempt){if(attempt===1)adb('shell','input','swipe','420','700','120','700','600');else adb('shell','input','swipe','420','550','420','730','600');await pause(1000);report.cameraGestures=(report.cameraGestures||0)+1;}
-     s=await state();let p=await evaluate('window.__ASC_ANDROID_TARGET('+JSON.stringify(action.id)+','+JSON.stringify(action.kind)+')');
-     for(let view=0;!p&&view<4;view++){adb('shell','input','swipe','420','700','120','700','600');await pause(1000);p=await evaluate('window.__ASC_ANDROID_TARGET('+JSON.stringify(action.id)+','+JSON.stringify(action.kind)+')');report.cameraGestures=(report.cameraGestures||0)+1;}
+    for(let attempt=0;attempt<6;attempt++){
+     if(attempt){if(attempt%2===1)adb('shell','input','swipe','420','700','120','700','600');else adb('shell','input','swipe','420','550','420','730','600');await pause(1000);report.cameraGestures=(report.cameraGestures||0)+1;}
+     s=await state();let p=await stableTarget(action);
+     for(let view=0;!p&&view<4;view++){adb('shell','input','swipe','420','700','120','700','600');await pause(1000);p=await stableTarget(action);report.cameraGestures=(report.cameraGestures||0)+1;}
      if(!p)throw Error('Target remains occluded after native camera orbit: '+JSON.stringify(action));
      await touch(p);await wait("window.__ASC_ANDROID_STATE?.().busy===false");const after=await state();
      ok=action.kind==='block'?after.current===action.id:((action.type==='ROTATOR'?after.blocks.find(b=>b.id===action.id).rotation:after.blocks.find(b=>b.id===action.id).sliderVal)||0)%2===action.value;
-     item.actions.push({action,point:p,attempt,after:{current:after.current,blocks:after.blocks.map(b=>({id:b.id,rotation:b.rotation,sliderVal:b.sliderVal}))},pass:ok});if(ok)break;
-     if(after.current!==s.current){item.actions[item.actions.length-1].replanFromObservedState=true;ok=true;break;}
+     item.actions.push({action,point:p,attempt,after:{current:after.current,viewport:after.viewport,blocks:after.blocks.map(b=>({id:b.id,rotation:b.rotation,sliderVal:b.sliderVal}))},pass:ok});if(ok)break;
+     if(after.current!==s.current||after.blocks.some(b=>{const before=s.blocks.find(x=>x.id===b.id);return before.rotation!==b.rotation||before.sliderVal!==b.sliderVal})){item.actions[item.actions.length-1].replanFromObservedState=true;ok=true;break;}
     }
     if(!ok)throw Error('Native touch did not perform '+JSON.stringify(action)+' in level '+level.id);
    }
@@ -125,6 +126,10 @@ async function attachWebView(report){
   await browser.close();adb('shell','am','force-stop','com.joenasr.ascension');adb('shell','am','start','-W','-n','com.joenasr.ascension/.MainActivity');await pause(5000);browser=await attachWebView(report);
   const restored=report.scope==='audio'?1:21;await wait('window.__ASC_ANDROID_STATE?.().level==='+restored);report.lifecycle.push({check:'cold restart restores level '+restored,pass:true});
   const begin=await evaluate(`(()=>{const e=Array.from(document.querySelectorAll('button')).find(e=>e.textContent==='BEGIN JOURNEY');if(!e)return null;const b=e.getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2}})()`);if(!begin)throw Error('Cold restart start screen missing');await touch(begin);await pause(3000);capture('cold-restart-level'+restored);
+  if(report.scope==='audio'){
+   for(let k=0;k<2;k++){adb('shell','input','swipe','420','700','120','700','600');await pause(1000);await stableTarget({kind:'block',id:'start'});}
+   report.cameraViewport=(await state()).viewport;capture('viewport-after-native-camera-gestures');
+  }
   if(report.scope==='full'){
    adb('shell','wm','size','480x1040');await pause(3000);
    const tall=await state();if(tall.level!==21||tall.height<=tall.width)throw Error('Tall portrait resize failed');

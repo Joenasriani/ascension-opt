@@ -60,6 +60,7 @@ jobs:
           QEMU_AUDIO_DRV: pa
           QEMU_PA_SERVER: unix:/tmp/ascension-pulse.sock
           QEMU_PA_SINK: ascension_ci
+          QEMU_AUDIO_DAC_FIXED_FREQ: 48000
           QEMU_AUDIO_IN_DRV: none
           PULSE_SERVER: unix:/tmp/ascension-pulse.sock
           ASCENSION_QA_SCOPE: ${{ contains(github.event.head_commit.message, '[audio-only]') && 'audio' || 'full' }}
@@ -67,7 +68,7 @@ jobs:
           ASCENSION_NATIVE_AUDIO_FORMAT: s16le
         with:
           api-level: ${{ matrix.api }}
-          target: google_apis
+          target: default
           arch: x86_64
           profile: pixel_2
           ram-size: 3072M

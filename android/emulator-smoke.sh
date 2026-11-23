@@ -53,6 +53,8 @@ PY
   return 1
 }
 run_adb wait-for-device
+run_adb root || true
+run_adb wait-for-device
 run_adb shell wm size 480x854
 run_adb shell wm density 187
 sleep 30

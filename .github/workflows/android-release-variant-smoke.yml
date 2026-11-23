@@ -40,8 +40,10 @@ jobs:
       - name: Build and QA-sign release variant
         working-directory: android
         run: |
-          gradle --no-daemon :app:assembleDebug :app:assembleRelease
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" sign --ks "$HOME/.android/debug.keystore" --ks-key-alias androiddebugkey --ks-pass pass:android --key-pass pass:android --out app/build/outputs/apk/release/app-release-qa.apk app/build/outputs/apk/release/app-release-unsigned.apk
+          gradle --no-daemon :app:assembleDebug :app:assembleRelease :app:signingReport | tee /tmp/ascension-release-gradle.log
+          debug_keystore="$(rg '^Store: ' /tmp/ascension-release-gradle.log | head -1 | cut -c8-)"
+          test -f "$debug_keystore"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" sign --ks "$debug_keystore" --ks-key-alias androiddebugkey --ks-pass pass:android --key-pass pass:android --out app/build/outputs/apk/release/app-release-qa.apk app/build/outputs/apk/release/app-release-unsigned.apk
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs app/build/outputs/apk/release/app-release-qa.apk
           "$ANDROID_HOME/build-tools/36.0.0/aapt2" dump badging app/build/outputs/apk/release/app-release-qa.apk > release-badging.txt
           if rg -q application-debuggable release-badging.txt; then exit 1; fi
@@ -66,6 +68,7 @@ jobs:
           QEMU_AUDIO_DRV: pa
           QEMU_PA_SERVER: unix:/tmp/ascension-pulse.sock
           QEMU_PA_SINK: ascension_ci
+          QEMU_AUDIO_DAC_FIXED_FREQ: 48000
           QEMU_AUDIO_IN_DRV: none
           PULSE_SERVER: unix:/tmp/ascension-pulse.sock
           ASCENSION_QA_SCOPE: ${{ contains(github.event.head_commit.message, '[audio-only]') && 'audio' || 'full' }}
@@ -73,7 +76,7 @@ jobs:
           ASCENSION_NATIVE_AUDIO_FORMAT: s16le
         with:
           api-level: ${{ matrix.api }}
-          target: google_apis
+          target: default
           arch: x86_64
           profile: pixel_2
           ram-size: 3072M
