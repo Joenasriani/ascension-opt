@@ -2,7 +2,7 @@ name: ASCENSION release variant smoke test
 on:
   push:
     branches: [release/android-play-2026-11]
-    paths: ['.github/workflows/android-release-variant-smoke.yml', 'android/release-variant-smoke.py']
+    paths: ['.github/workflows/android-release-variant-smoke.yml', 'android/release-variant-smoke.py', 'android/patch-runtime-for-android.py', 'android/bundled-assets/**']
   workflow_dispatch:
 permissions:
   contents: read

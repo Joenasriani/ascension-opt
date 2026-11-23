@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
-"""Android-only hotfix: remove a nonessential remote HDR environment requirement.
-The original web runtime remains untouched. Existing ambient and directional lights
-are preserved. This removes the external HDR network dependency responsible for
-a blank Android 3D scene when the file cannot be fetched.
-"""
+"""Bundle the original online city lighting locally for identical offline rendering."""
 from pathlib import Path
 bundle=Path(__file__).resolve().parents[1] / "android/app/src/main/assets/assets/index-BjuLtVzX.js"
 source=bundle.read_text()
 old='ee.jsx(B4,{preset:"city"})'
 assert source.count(old)==1, "Unknown runtime build – refuse speculative modification"
-patched=source.replace(old,"null",1)
+from shutil import copyfile
+import hashlib
+hdr=Path(__file__).resolve().parent / "bundled-assets/lighting/potsdamer_platz_1k.hdr"
+assert hashlib.sha256(hdr.read_bytes()).hexdigest()=="7afe4c2f9700ee78c7477c53fa355463d7dda1fdede401432d6b5f9ff0a95696"
+lighting=bundle.parent.parent / "lighting"
+lighting.mkdir(exist_ok=True)
+copyfile(hdr,lighting / hdr.name)
+patched=source.replace(old,'ee.jsx(B4,{files:"./lighting/potsdamer_platz_1k.hdr"})',1)
 bundle.write_text(patched)
 assert old not in bundle.read_text()
-print("PASS: Android-only HDR dependency removed; game mechanics left untouched")
+print("PASS: exact original city HDR bundled locally; original lighting settings preserved")
 
 # Load local CSS and fonts in the packaged Android HTML. The browser source
 # remains unchanged; the packaged header receives the narrow fixes below.
