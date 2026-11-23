@@ -17,6 +17,10 @@ collect_diagnostics() {
   run_adb shell dumpsys media.audio_flinger > android-evidence/audio-flinger.txt 2>&1 || true
   run_adb shell df -h > android-evidence/storage.txt 2>&1 || true
   run_adb shell dumpsys SurfaceFlinger > android-evidence/surfaceflinger.txt 2>&1 || true
+  if [[ -n "${audio_recorder_pid:-}" ]]; then kill "$audio_recorder_pid" 2>/dev/null || true; fi
+  cp /tmp/ascension-pulse.log android-evidence/host-pulse.log 2>/dev/null || true
+  cp /tmp/ascension-recorder.log android-evidence/host-recorder.log 2>/dev/null || true
+  pactl list short sink-inputs > android-evidence/host-audio-streams.txt 2>&1 || true
   exit "$status"
 }
 trap collect_diagnostics EXIT
@@ -55,13 +59,29 @@ sleep 30
 run_adb shell svc wifi disable
 run_adb shell svc data disable
 run_adb shell ip route > android-evidence/network-routes.txt
-run_adb shell cmd media_session volume --stream 3 --set 15
+run_adb shell cmd media_session volume --stream 3 --set 15 --get
+parec --raw --format=s16le --rate=48000 --channels=2 --device=ascension_ci.monitor > "${ASCENSION_NATIVE_AUDIO}" 2>/tmp/ascension-recorder.log &
+audio_recorder_pid=$!
 run_adb logcat -c
 run_adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+python3 - <<'PYICON'
+import hashlib, io, json, subprocess, zipfile
+from pathlib import Path
+raw=subprocess.check_output(['adb','shell','pm','path','com.joenasr.ascension'],timeout=45).decode().strip()
+assert raw.startswith('package:') and '\n' not in raw, 'Unexpected installed package path'
+apk=subprocess.check_output(['adb','exec-out','cat',raw[len('package:'):]],timeout=45)
+z=zipfile.ZipFile(io.BytesIO(apk));names=[n for n in z.namelist() if n.endswith('/ascension_launcher.png')]
+assert len(names)==1, 'Installed launcher drawable missing'
+icon=z.read(names[0]);digest=hashlib.sha256(icon).hexdigest()
+assert digest=='d31d93b3611fd499bcd16ddff23af09351f5c649ee9c43d90a50588a151df10d', 'Installed icon differs from approved artwork'
+Path('android-evidence/installed-launcher-icon.png').write_bytes(icon)
+Path('android-evidence/installed-package-icon.json').write_text(json.dumps({'package':'com.joenasr.ascension','installed_apk_sha256':hashlib.sha256(apk).hexdigest(),'launcher_resource':names[0],'approved_icon_sha256':digest},indent=2))
+print('PASS: actual installed launcher resource matches exact approved icon')
+PYICON
 run_adb shell settings put secure immersive_mode_confirmations confirmed
 run_adb shell am start -W -n com.joenasr.ascension/.MainActivity
 sleep 20
-run_adb shell cmd media_session volume --stream 3 --set 15
+run_adb shell cmd media_session volume --stream 3 --set 15 --get
 run_adb shell dumpsys audio > android-evidence/audio-before-game.txt
 sleep 3
 capture landing

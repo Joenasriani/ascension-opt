@@ -42,15 +42,26 @@ jobs:
       - name: Enable KVM
         run: |
           if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+      - name: Configure isolated native audio loopback
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y pulseaudio pulseaudio-utils
+          pulseaudio --start --exit-idle-time=-1 --log-target=file:/tmp/ascension-pulse.log
+          pactl load-module module-native-protocol-unix socket=/tmp/ascension-pulse.sock auth-anonymous=1
+          pactl load-module module-null-sink sink_name=ascension_ci rate=48000 channels=2
+          pactl -s unix:/tmp/ascension-pulse.sock set-default-sink ascension_ci
+          pactl -s unix:/tmp/ascension-pulse.sock info
       - name: Install and launch in Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         env:
-          QEMU_AUDIO_DRV: wav
-          QEMU_WAV_FREQUENCY: 48000
+          QEMU_AUDIO_DRV: pa
+          QEMU_PA_SERVER: unix:/tmp/ascension-pulse.sock
+          QEMU_PA_SINK: ascension_ci
           QEMU_AUDIO_IN_DRV: none
+          PULSE_SERVER: unix:/tmp/ascension-pulse.sock
           ASCENSION_QA_SCOPE: ${{ contains(github.event.head_commit.message, '[audio-only]') && 'audio' || 'full' }}
-          QEMU_WAV_PATH: /tmp/ascension-native-output.wav
-          ASCENSION_NATIVE_AUDIO: /tmp/ascension-native-output.wav
+          ASCENSION_NATIVE_AUDIO: /tmp/ascension-native-output.pcm
+          ASCENSION_NATIVE_AUDIO_FORMAT: s16le
         with:
           api-level: ${{ matrix.api }}
           target: google_apis
@@ -61,15 +72,8 @@ jobs:
           disk-size: 4096M
           disable-animations: true
           pre-emulator-launch-script: sed -i 's/^hw.audioInput=.*/hw.audioInput=no/' "$ANDROID_AVD_HOME/test.avd/config.ini"
-          emulator-options: -feature -VirtioSndCard -no-window -gpu swiftshader -no-snapshot -cores 2 -memory 3072 -no-boot-anim
+          emulator-options: -no-window -gpu swiftshader -no-snapshot -cores 2 -memory 3072 -no-boot-anim
           script: bash android/emulator-smoke.sh
-      - name: Preserve finalized native audio stream
-        if: always()
-        run: |
-          if [ -f /tmp/ascension-native-output.wav ]; then
-            mkdir -p android-evidence
-            cp /tmp/ascension-native-output.wav android-evidence/native-output-finalized.wav
-          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
