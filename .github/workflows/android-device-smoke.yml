@@ -45,15 +45,18 @@ jobs:
       - name: Configure isolated native audio loopback
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y pulseaudio pulseaudio-utils
+          sudo apt-get install -y pulseaudio pulseaudio-utils xvfb libxcb-cursor0
           pulseaudio --start --exit-idle-time=-1 --log-target=file:/tmp/ascension-pulse.log
           pactl load-module module-native-protocol-unix socket=/tmp/ascension-pulse.sock auth-anonymous=1
           pactl load-module module-null-sink sink_name=ascension_ci rate=48000 channels=2
           pactl -s unix:/tmp/ascension-pulse.sock set-default-sink ascension_ci
           pactl -s unix:/tmp/ascension-pulse.sock info
+          Xvfb :99 -screen 0 1280x1024x24 -nolisten tcp </dev/null >/tmp/ascension-xvfb.log 2>&1 &
       - name: Install and launch in Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         env:
+          DISPLAY: ':99'
+          QT_X11_NO_MITSHM: '1'
           QEMU_AUDIO_DRV: pa
           QEMU_PA_SERVER: unix:/tmp/ascension-pulse.sock
           QEMU_PA_SINK: ascension_ci
@@ -72,7 +75,7 @@ jobs:
           disk-size: 4096M
           disable-animations: true
           pre-emulator-launch-script: sed -i 's/^hw.audioInput=.*/hw.audioInput=no/' "$ANDROID_AVD_HOME/test.avd/config.ini"
-          emulator-options: -no-window -gpu swiftshader -no-snapshot -cores 2 -memory 3072 -no-boot-anim
+          emulator-options: -gpu swiftshader -no-snapshot -cores 2 -memory 3072 -no-boot-anim
           script: bash android/emulator-smoke.sh
       - uses: actions/upload-artifact@v4
         if: always()
