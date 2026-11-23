@@ -65,7 +65,8 @@ jobs:
         env:
           DISPLAY: ':99'
           QT_X11_NO_MITSHM: '1'
-          QEMU_AUDIO_DRV: pa
+          QEMU_AUDIO_DRV: wav
+          QEMU_WAV_PATH: /tmp/ascension-native-output.wav
           QEMU_PA_SERVER: unix:/tmp/ascension-pulse.sock
           QEMU_PA_SINK: ascension_ci
           QEMU_AUDIO_DAC_FIXED_FREQ: 48000
@@ -94,7 +95,7 @@ jobs:
             s='\n'.join(line for line in s.splitlines() if not line.startswith(('hw.audioInput=','hw.audioOutput=')))+'\nhw.audioInput=yes\nhw.audioOutput=yes\n'
             p.write_text(s);(output/'avd-effective-audio.ini').write_text(s)
             PYAVD
-          emulator-options: -verbose -gpu swiftshader -no-snapshot -cores 2 -memory 3072 -no-boot-anim
+          emulator-options: -no-window -verbose -gpu swiftshader -no-snapshot -cores 2 -memory 3072 -no-boot-anim
           script: python3 android/release-variant-smoke.py android/app/build/outputs/apk/release/app-release-qa.apk
       - uses: actions/upload-artifact@v4
         if: always()
