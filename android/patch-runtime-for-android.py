@@ -25,6 +25,13 @@ html=html.replace(oldscript,'<link rel="stylesheet" href="./ascension-tailwind.c
 html=re.sub(r'<link rel="preconnect" href="https://fonts.googleapis.com">\s*','',html)
 html=re.sub(r'<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\s*','',html)
 html=html.replace('<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;600&display=swap" rel="stylesheet">','<link rel="stylesheet" href="./local-fonts.css">',1)
+# Avoid the implicit /favicon.ico request escaping the /assets/ loader. Reuse
+# the exact approved launcher artwork for this local document icon as well.
+from shutil import copyfile
+approved_icon=Path(__file__).resolve().parents[1] / 'android/app/src/main/res/drawable-nodpi/ascension_launcher.png'
+copyfile(approved_icon,index.parent / 'approved-icon.png')
+assert '<link rel="icon"' not in html
+html=html.replace('</head>','<link rel="icon" type="image/png" href="./approved-icon.png">\n</head>',1)
 index.write_text(html)
 assert 'cdn.tailwindcss.com' not in html
 assert 'local-fonts.css' in html

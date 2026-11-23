@@ -131,7 +131,7 @@ The 21-level reference graph lives in `levels_1_21.json`. Level 14 was previousl
 | Packaging | Static HTML + compiled JS |
 | PWA | Manifest, service worker, offline fallback, icons |
 | QA | Hidden level selector in `assets/qa-level-select.js` |
-| Android path | TWA/Bubblewrap preparation in `README_APK.md` |
+| Android release | Local WebView wrapper in `android/`; see `ANDROID_PLAY_RELEASE_2026-11.md`. Package `com.joenasr.ascension`, title ASCENSION, portrait, API 36. |
 
 ## Repository layout
 
@@ -201,11 +201,11 @@ However, **no license file is currently present in this repository**. Do not ass
 ## Known constraints
 
 - The runtime is compiled/minified; an earlier React/TypeScript/Vite development backup exists at `Joenasriani/ascension`, but it has **not** been verified as equivalent to the current playable distribution.
-- There is no package manifest or source rebuild path in this snapshot.
-- Several runtime resources remain remote.
-- Full offline operation is not guaranteed on first launch.
+- The editable web source/package manifest is absent; Android packaging uses the checked-in Gradle wrapper project.
+- The browser distribution retains remote resources; Android bundles its game code, CSS, fonts and music.
+- Browser offline operation is not guaranteed on first launch. The Android release is tested from a fresh install without a default network route.
 - PWA/TWA deployment requires HTTPS outside localhost.
-- Android Digital Asset Links still require the real release signing certificate fingerprint.
+- Historical TWA deployments require Digital Asset Links; the current local WebView Android release does not use TWA. Preserve its existing upload signing certificate.
 - Historical QA reports are evidence of past checks, not proof of current runtime behavior.
 
 ## Adoption signals

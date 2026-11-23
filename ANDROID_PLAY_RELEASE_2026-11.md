@@ -19,6 +19,14 @@ Status: verification in progress; NOT READY for Play submission.
 - Bind observations to ASCENSION's process rather than another app's WebView.
 - Release packaging does not inject the debug observation code.
 - Preserved pre-existing Android HDR removal and bundled CSS/fonts.
+- Added an Android-only last-opened-level checkpoint for cold restarts.
+- Require OpenGL ES 3, matching the bundled renderer’s WebGL 2 requirement.
+- Offline startup, native music toggles and background/resume have passed on API 35/36.
+- Native sequential gameplay completed all 21 levels on both APIs at c311c4430287d94b8fd602db2cae2cbd161390d6 (run 45102733863). Its overall result is red solely because native audio recording failed; do not call the whole workflow green.
+- Bound portrait hints and corrected gameplay-header contrast, including the dark final level.
+- Removed unused font preconnects and supplied a local document icon using the exact approved artwork.
+- Native output recording uses an isolated PulseAudio monitor. Playback-state checks and synthesized samples do not alone establish audible output.
+- Original approved icon bytes are retained. A separate 32-bit PNG copy preserves every RGB pixel exactly for the Play upload format.
 
 ## Artwork
 Approved icon SHA-256: d31d93b3611fd499bcd16ddff23af09351f5c649ee9c43d90a50588a151df10d
@@ -40,9 +48,10 @@ The initial app form is filled as Game / Free, with export-compliance certificat
 DIORAMA is verified as closed testing, production inactive, with 0 opted-in testers. Production access requires 12 testers continuously opted in for 14 days. Do not claim DIORAMA is published to production.
 No production release, legal certification, or store submission has been performed.
 Privacy URL: https://joenasriani.github.io/ascension-opt/privacy.html
-The currently hosted policy still describes former remote fonts/styles; align it with the final verified Android package before submission.
+The hosted policy was updated and read back successfully. It distinguishes bundled Android content, on-device progress, hosted browser resources and platform-controlled WebView diagnostics.
 
 ## Evidence limits
 Static solver and geometry checks pass for all 21 levels. This does not establish a full native playthrough.
 Read the final Android evidence report and workflow conclusion before making gameplay claims.
-API 36 device behavior, audible output, final signing, image encoding compliance and Play acceptance must be verified before marking READY.
+The final UI candidate still needs its native screenshot/layout review. Native audible output, final signing and Play acceptance remain required. Store image dimensions/encoding and exact approved pixels have been checked.
+Native gameplay evidence is saved in the existing Drive release folder under Native_Android_Verification_Evidence; its raw reports explicitly retain the separate audio gate failure.
