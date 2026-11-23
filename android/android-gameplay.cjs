@@ -47,7 +47,7 @@ async function attachWebView(report){
   return {cdp,evaluate,wait,close:async()=>ws.close()};
 }
 (async()=>{
- const report={lifecycle:[],kind:'Android native-touch gameplay',scope:process.env.ASCENSION_QA_SCOPE||'full',levels:[],errors:[],network:[],limits:['Debug build has read-only scene observations. No gameplay setters are invoked.','Audio output needs separate audible verification.']};
+ const report={lifecycle:[],kind:'Android native-touch gameplay',scope:process.env.ASCENSION_QA_SCOPE||'full',levels:[],errors:[],network:[],limits:['Debug build has read-only scene observations. No gameplay setters are invoked.','Native PCM evidence is separate from playback state; no physical-device listening test is claimed.']};
  let browser;
  try{
   browser=await attachWebView(report);
@@ -83,7 +83,11 @@ async function attachWebView(report){
   for(const level of levels){
    await wait('window.__ASC_ANDROID_STATE?.().level==='+level.id);await pause(2000);
    if(level.id===1){await control('Turn music off');sfxStart=markAudio();}
-   const actions=route(level),item={id:level.id,actions:[],completed:false};report.levels.push(item);capture('level-'+level.id+'-start');
+   const actions=route(level),item={id:level.id,actions:[],completed:false};report.levels.push(item);
+   item.header=await evaluate(`(()=>{const heading=document.querySelector('h2');if(!heading)return null;const e=heading.parentElement,p=e.querySelector('p'),r=e.getBoundingClientRect();return {left:r.left,right:r.right,viewport:innerWidth,hintFits:p.scrollWidth<=p.clientWidth+1,color:getComputedStyle(e).color}})()`);
+   if(!item.header||item.header.left<0||item.header.right>item.header.viewport+1||!item.header.hintFits)throw Error('Portrait header overflows in level '+level.id);
+   if(level.id===21&&item.header.color!=='rgb(248, 250, 252)')throw Error('Dark-theme header contrast fix absent');
+   capture('level-'+level.id+'-start');
    let actionCount=0;
    while(true){
     await wait("window.__ASC_ANDROID_STATE?.().busy===false");
@@ -113,7 +117,7 @@ async function attachWebView(report){
   report.sfx=await evaluate('window.__ASC_AUDIO_QA');if(!report.sfx||report.sfx.destinationConnections<1||report.sfx.maxPeak<=0)throw Error('No nonzero synthesized SFX samples observed');
   await browser.close();adb('shell','am','force-stop','com.joenasr.ascension');adb('shell','am','start','-W','-n','com.joenasr.ascension/.MainActivity');await pause(5000);browser=await attachWebView(report);
   const restored=report.scope==='audio'?1:21;await wait('window.__ASC_ANDROID_STATE?.().level==='+restored);report.lifecycle.push({check:'cold restart restores level '+restored,pass:true});
-  const begin=await evaluate(`(()=>{const e=Array.from(document.querySelectorAll('button')).find(e=>e.textContent==='BEGIN JOURNEY');if(!e)return null;const b=e.getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2}})()`);if(!begin)throw Error('Cold restart start screen missing');await touch(begin);await pause(3000);capture('cold-restart-level21');
+  const begin=await evaluate(`(()=>{const e=Array.from(document.querySelectorAll('button')).find(e=>e.textContent==='BEGIN JOURNEY');if(!e)return null;const b=e.getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2}})()`);if(!begin)throw Error('Cold restart start screen missing');await touch(begin);await pause(3000);capture('cold-restart-level'+restored);
   console.log('PASS: completed '+report.levels.length+' levels through native Android touch input ('+report.scope+')');
   if(!report.nativeMusic.pass||!report.nativeSfx.pass)throw Error('Native audio recording did not pass; gameplay completion is recorded separately');
  }catch(e){report.errors.push(String(e.stack||e));try{fs.writeFileSync('android-evidence/failure.png',execFileSync('adb',['exec-out','screencap','-p'],{timeout:45000}))}catch{}console.error(e);process.exitCode=1;}

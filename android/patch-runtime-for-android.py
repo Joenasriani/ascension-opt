@@ -15,7 +15,7 @@ assert old not in bundle.read_text()
 print("PASS: Android-only HDR dependency removed; game mechanics left untouched")
 
 # Load local CSS and fonts in the packaged Android HTML. The browser source
-# remains unchanged, and no gameplay or layout classes are rewritten.
+# remains unchanged; the packaged header receives the narrow fixes below.
 import re
 index=bundle.parent.parent / "index.html"
 html=index.read_text()
@@ -42,3 +42,21 @@ assert bundle_source.count(old)==1, 'Unknown level-state persistence insertion'
 new='x=Yt.useRef(null),v=_b[r];Yt.useEffect(()=>{try{localStorage.setItem("ascension.android.level",String(r))}catch{}},[r]);Yt.useEffect(()=>{window.__ASCENSION_LEVEL_COUNT='
 bundle.write_text(bundle_source.replace(old,new,1))
 print('PASS: Android level checkpoint survives cold start; storage failure remains non-blocking')
+
+# Keep level hints within the portrait viewport and maintain readable text on
+# the existing dark level-21 theme. No scene geometry or artwork is changed.
+bundle_source=bundle.read_text()
+old='className:"absolute top-8 left-8 text-gray-700 pointer-events-none z-10",children:'
+assert bundle_source.count(old)==1, 'Unknown gameplay header'
+new='className:"absolute top-8 left-8 right-8 text-gray-700 pointer-events-none z-10",style:{color:v.theme.bg==="#130f40"?"#f8fafc":"#111827"},children:'
+bundle.write_text(bundle_source.replace(old,new,1))
+print('PASS: portrait hint width and dark-theme header contrast corrected')
+
+bundle_source=bundle.read_text()
+for old,new in [
+ ('className:"text-sm font-light mt-2 tracking-widest opacity-60",children:', 'className:"text-sm font-light mt-2 tracking-widest opacity-60",style:{opacity:1},children:'),
+ ('className:"text-[10px] font-bold tracking-[0.2em] uppercase opacity-50 group-hover:opacity-100 transition-opacity",children:', 'className:"text-[10px] font-bold tracking-[0.2em] uppercase opacity-50 group-hover:opacity-100 transition-opacity",style:{opacity:.85},children:')
+]:
+    assert bundle_source.count(old)==1, 'Unknown gameplay text style'
+    bundle_source=bundle_source.replace(old,new,1)
+bundle.write_text(bundle_source)

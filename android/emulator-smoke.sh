@@ -61,8 +61,9 @@ run_adb install -r android/app/build/outputs/apk/debug/app-debug.apk
 run_adb shell settings put secure immersive_mode_confirmations confirmed
 run_adb shell am start -W -n com.joenasr.ascension/.MainActivity
 sleep 20
-for n in {1..15}; do run_adb shell input keyevent KEYCODE_VOLUME_UP; done
+run_adb shell cmd media_session volume --stream 3 --set 15
 run_adb shell dumpsys audio > android-evidence/audio-before-game.txt
+sleep 3
 capture landing
 # Coordinates refer to the explicit 480x854 portrait test viewport.
 run_adb shell input tap 240 474
