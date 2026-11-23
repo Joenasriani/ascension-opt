@@ -95,7 +95,7 @@ jobs:
             s='\n'.join(line for line in s.splitlines() if not line.startswith(('hw.audioInput=','hw.audioOutput=')))+'\nhw.audioInput=yes\nhw.audioOutput=yes\n'
             p.write_text(s);(output/'avd-effective-audio.ini').write_text(s)
             PYAVD
-          emulator-options: -no-window -verbose -gpu swiftshader -no-snapshot -cores 2 -memory 3072 -no-boot-anim
+          emulator-options: -no-window -verbose -feature -Vulkan -gpu swiftshader -no-snapshot -cores 2 -memory 3072 -no-boot-anim
           script: python3 android/release-variant-smoke.py android/app/build/outputs/apk/release/app-release-qa.apk
       - uses: actions/upload-artifact@v4
         if: always()

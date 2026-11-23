@@ -9,7 +9,7 @@ def capture(name):
  errors=[]
  for attempt in range(3):
   try:
-   b=adb('exec-out','screencap','-p');assert b.startswith(b'\x89PNG\r\n\x1a\n') and b.endswith(b'IEND\xaeB`\x82')
+   b=subprocess.check_output(['adb','exec-out','screencap','-p'],timeout=15);assert b.startswith(b'\x89PNG\r\n\x1a\n') and b.endswith(b'IEND\xaeB`\x82')
    p=out/(name+'.png');p.write_bytes(b);return p
   except Exception as e:errors.append(str(e));time.sleep(2)
  raise RuntimeError('Native screenshot capture failed: '+str(errors))
@@ -25,6 +25,8 @@ raw=Path('/tmp/ascension-release-native.pcm');record=None
 try:
  adb('wait-for-device');adb('shell','wm','size','480x854');adb('shell','wm','density','187');time.sleep(30)
  adb('shell','svc','wifi','disable');adb('shell','svc','data','disable');adb('logcat','-c')
+ capture('emulator-before-app-install')
+ (out/'system-properties.txt').write_bytes(adb('shell','getprop'))
  record=subprocess.Popen(['parec','--raw','--format=s16le','--rate=48000','--channels=2','--device=ascension_ci.monitor'],stdout=raw.open('wb'),stderr=(out/'recorder.log').open('wb'))
  apk=Path(sys.argv[1]);adb('install','-r',str(apk))
  installed=adb('shell','pm','path','com.joenasr.ascension').decode().strip().removeprefix('package:')
