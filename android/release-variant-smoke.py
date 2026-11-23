@@ -23,7 +23,7 @@ def audio(name,mark):
  r={'seconds':len(data)/192000,'peak':peak,'rms':rms};r['pass']=r['seconds']>=2 and peak>=16 and rms>=3;return r
 raw=Path('/tmp/ascension-release-native.pcm');record=None
 try:
- adb('wait-for-device');adb('root');adb('wait-for-device');adb('shell','wm','size','480x854');adb('shell','wm','density','187');time.sleep(30)
+ adb('wait-for-device');adb('shell','wm','size','480x854');adb('shell','wm','density','187');time.sleep(30)
  adb('shell','svc','wifi','disable');adb('shell','svc','data','disable');adb('logcat','-c')
  record=subprocess.Popen(['parec','--raw','--format=s16le','--rate=48000','--channels=2','--device=ascension_ci.monitor'],stdout=raw.open('wb'),stderr=(out/'recorder.log').open('wb'))
  apk=Path(sys.argv[1]);adb('install','-r',str(apk))
