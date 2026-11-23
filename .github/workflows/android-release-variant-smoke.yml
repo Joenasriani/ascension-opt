@@ -41,12 +41,12 @@ jobs:
         working-directory: android
         run: |
           gradle --no-daemon :app:assembleDebug :app:assembleRelease :app:signingReport | tee /tmp/ascension-release-gradle.log
-          debug_keystore="$(rg '^Store: ' /tmp/ascension-release-gradle.log | head -1 | cut -c8-)"
+          debug_keystore="$(python3 -c 'from pathlib import Path; print(next(line[7:] for line in Path("/tmp/ascension-release-gradle.log").read_text().splitlines() if line.startswith("Store: ") and Path(line[7:]).is_file()))')"
           test -f "$debug_keystore"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" sign --ks "$debug_keystore" --ks-key-alias androiddebugkey --ks-pass pass:android --key-pass pass:android --out app/build/outputs/apk/release/app-release-qa.apk app/build/outputs/apk/release/app-release-unsigned.apk
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs app/build/outputs/apk/release/app-release-qa.apk
           "$ANDROID_HOME/build-tools/36.0.0/aapt2" dump badging app/build/outputs/apk/release/app-release-qa.apk > release-badging.txt
-          if rg -q application-debuggable release-badging.txt; then exit 1; fi
+          python3 -c 'from pathlib import Path; assert "application-debuggable" not in Path("release-badging.txt").read_text()' 
       - name: Enable KVM
         run: |
           if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
