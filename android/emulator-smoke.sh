@@ -12,6 +12,8 @@ collect_diagnostics() {
   run_adb logcat -d > android-evidence/logcat.txt 2>&1 || true
   run_adb shell dumpsys activity activities > android-evidence/activities.txt 2>&1 || true
   run_adb shell dumpsys meminfo com.joenasr.ascension > android-evidence/memory.txt 2>&1 || true
+  run_adb shell dumpsys audio > android-evidence/audio.txt 2>&1 || true
+  run_adb shell dumpsys media.audio_flinger > android-evidence/audio-flinger.txt 2>&1 || true
   run_adb shell df -h > android-evidence/storage.txt 2>&1 || true
   run_adb shell dumpsys SurfaceFlinger > android-evidence/surfaceflinger.txt 2>&1 || true
   exit "$status"
@@ -52,13 +54,14 @@ sleep 30
 run_adb shell svc wifi disable
 run_adb shell svc data disable
 run_adb shell ip route > android-evidence/network-routes.txt
+run_adb shell cmd media_session volume --stream 3 --set 15
 run_adb logcat -c
 run_adb install -r android/app/build/outputs/apk/debug/app-debug.apk
 run_adb shell settings put secure immersive_mode_confirmations confirmed
 run_adb shell am start -W -n com.joenasr.ascension/.MainActivity
 sleep 20
 capture landing
-# Coordinates refer to the explicit 720x1280 portrait test viewport.
+# Coordinates refer to the explicit 480x854 portrait test viewport.
 run_adb shell input tap 240 474
 sleep 15
 capture level1

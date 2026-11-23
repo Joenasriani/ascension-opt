@@ -3,8 +3,8 @@ const {execFileSync}=require('node:child_process');
 const fs=require('node:fs');
 const adb=(...a)=>execFileSync('adb',a,{timeout:45000}).toString();
 const pause=ms=>new Promise(r=>setTimeout(r,ms));
-function route(level){
- const blocks=level.blocks, ids=new Map(blocks.map((b,i)=>[b.id,i]));
+function route(level,observed){
+ const blocks=observed?level.blocks.map(b=>({...b,...observed.blocks.find(x=>x.id===b.id)})):level.blocks, ids=new Map(blocks.map((b,i)=>[b.id,i]));
  const moves=blocks.map((b,i)=>({b,i})).filter(x=>['ROTATOR','SLIDER'].includes(x.b.type));
  const mi=new Map(moves.map((m,j)=>[m.i,j]));
  const init=moves.reduce((a,{b},j)=>a|((((b.type==='ROTATOR'?b.rotation:b.sliderVal)||0)%2)<<j),0);
@@ -12,7 +12,7 @@ function route(level){
  const geo=(i,bits)=>{const b=blocks[i],v=val(i,bits),s=b.size||{x:1,y:1,z:1};return {p:[b.position.x,b.position.y+(b.type==='SLIDER'?2*v:0),b.position.z],s:b.type==='ROTATOR'&&v?[s.z,s.y,s.x]:[s.x,s.y,s.z]}};
  const aligned=(i,j,bits)=>{const a=geo(i,bits),b=geo(j,bits);return Math.abs(a.p[1]-b.p[1])<=.1&&[0,2].every(k=>Math.abs(a.p[k]-b.p[k])<=(a.s[k]+b.s[k])/2+.1)};
  const safe=(i,bits)=>blocks.every((_,j)=>{if(i===j)return true;const a=geo(i,bits),b=geo(j,bits);return ![0,1,2].every(k=>Math.abs(a.p[k]-b.p[k])<(a.s[k]+b.s[k])/2-.02)});
- const start=ids.get(level.startBlockId),end=ids.get(level.endBlockId),key=(i,b)=>`${i}:${b}`;
+ const start=ids.get(observed?.current||level.startBlockId),end=ids.get(level.endBlockId),key=(i,b)=>`${i}:${b}`;
  const q=[[start,init]], parents=new Map([[key(start,init),null]]);
  for(let n=0;n<q.length;n++){
   const [i,bits]=q[n],k=key(i,bits);
@@ -84,16 +84,22 @@ async function attachWebView(report){
    await wait('window.__ASC_ANDROID_STATE?.().level==='+level.id);await pause(2000);
    if(level.id===1){await control('Turn music off');sfxStart=markAudio();}
    const actions=route(level),item={id:level.id,actions:[],completed:false};report.levels.push(item);capture('level-'+level.id+'-start');
-   for(const action of actions){
+   let actionCount=0;
+   while(true){
+    await wait("window.__ASC_ANDROID_STATE?.().busy===false");
+    const remaining=route(level,await state());if(!remaining.length)break;
+    if(++actionCount>120)throw Error("Native route recovery exceeded 120 actions in level "+level.id);
+    const action=remaining[0];
     let ok=false;
     for(let attempt=0;attempt<3;attempt++){
      if(attempt){if(attempt===1)adb('shell','input','swipe','420','700','120','700','600');else adb('shell','input','swipe','420','550','420','730','600');await pause(1000);report.cameraGestures=(report.cameraGestures||0)+1;}
      s=await state();let p=await evaluate('window.__ASC_ANDROID_TARGET('+JSON.stringify(action.id)+','+JSON.stringify(action.kind)+')');
      for(let view=0;!p&&view<4;view++){adb('shell','input','swipe','420','700','120','700','600');await pause(1000);p=await evaluate('window.__ASC_ANDROID_TARGET('+JSON.stringify(action.id)+','+JSON.stringify(action.kind)+')');report.cameraGestures=(report.cameraGestures||0)+1;}
      if(!p)throw Error('Target remains occluded after native camera orbit: '+JSON.stringify(action));
-     await touch(p);const after=await state();
+     await touch(p);await wait("window.__ASC_ANDROID_STATE?.().busy===false");const after=await state();
      ok=action.kind==='block'?after.current===action.id:((action.type==='ROTATOR'?after.blocks.find(b=>b.id===action.id).rotation:after.blocks.find(b=>b.id===action.id).sliderVal)||0)%2===action.value;
      item.actions.push({action,point:p,attempt,after:{current:after.current,blocks:after.blocks.map(b=>({id:b.id,rotation:b.rotation,sliderVal:b.sliderVal}))},pass:ok});if(ok)break;
+     if(after.current!==s.current){item.actions[item.actions.length-1].replanFromObservedState=true;ok=true;break;}
     }
     if(!ok)throw Error('Native touch did not perform '+JSON.stringify(action)+' in level '+level.id);
    }
