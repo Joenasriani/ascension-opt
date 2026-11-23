@@ -71,7 +71,7 @@ async function attachWebView(report){
   report.musicPlaying=await media();if(!report.musicPlaying.some(a=>!a.paused&&a.currentTime>0&&!a.error))throw Error('Music did not play after native user control');
   const nativePath=process.env.ASCENSION_NATIVE_AUDIO||'/tmp/ascension-native-output.wav';
   const markAudio=()=>{try{return fs.statSync(nativePath).size}catch{return null}};
-  const captureNative=(file,mark)=>{try{if(mark===null)throw Error('Native WAV backend was not available at capture start');const src=fs.readFileSync(nativePath);if(src.toString('ascii',0,4)!=='RIFF'||src.readUInt16LE(20)!==1||src.readUInt16LE(34)!==16)throw Error('Unexpected native PCM format');const channels=src.readUInt16LE(22),rate=src.readUInt32LE(24),frame=channels*2,start=44+Math.ceil((Math.max(mark,44)-44)/frame)*frame,end=44+Math.floor((src.length-44)/frame)*frame,data=src.subarray(start,end);const h=Buffer.alloc(44);h.write('RIFF');h.writeUInt32LE(36+data.length,4);h.write('WAVEfmt ',8);h.writeUInt32LE(16,16);h.writeUInt16LE(1,20);h.writeUInt16LE(channels,22);h.writeUInt32LE(rate,24);h.writeUInt32LE(rate*frame,28);h.writeUInt16LE(frame,32);h.writeUInt16LE(16,34);h.write('data',36);h.writeUInt32LE(data.length,40);fs.writeFileSync('android-evidence/'+file,Buffer.concat([h,data]));let peak=0,sum=0;for(let i=0;i+1<data.length;i+=2){const v=data.readInt16LE(i);peak=Math.max(peak,Math.abs(v));sum+=v*v}const rms=data.length?Math.sqrt(sum/(data.length/2)):0;return {pass:data.length>44100&&peak>=100&&rms>=10,bytes:data.length,peak,rms,seconds:data.length/frame/rate,sourceStartByte:start,sourceEndByte:end}}catch(e){return {pass:false,error:String(e.message)}}};
+  const captureNative=(file,mark)=>{try{if(mark===null)throw Error('Native WAV backend was not available at capture start');const src=fs.readFileSync(nativePath);if(src.toString('ascii',0,4)!=='RIFF'||src.readUInt16LE(20)!==1||src.readUInt16LE(34)!==16)throw Error('Unexpected native PCM format');const channels=src.readUInt16LE(22),rate=src.readUInt32LE(24),frame=channels*2,start=44+Math.ceil((Math.max(mark,44)-44)/frame)*frame,end=44+Math.floor((src.length-44)/frame)*frame,data=src.subarray(start,end);const h=Buffer.alloc(44);h.write('RIFF');h.writeUInt32LE(36+data.length,4);h.write('WAVEfmt ',8);h.writeUInt32LE(16,16);h.writeUInt16LE(1,20);h.writeUInt16LE(channels,22);h.writeUInt32LE(rate,24);h.writeUInt32LE(rate*frame,28);h.writeUInt16LE(frame,32);h.writeUInt16LE(16,34);h.write('data',36);h.writeUInt32LE(data.length,40);fs.writeFileSync('android-evidence/'+file,Buffer.concat([h,data]));let peak=0,sum=0;for(let i=0;i+1<data.length;i+=2){const v=data.readInt16LE(i);peak=Math.max(peak,Math.abs(v));sum+=v*v}const rms=data.length?Math.sqrt(sum/(data.length/2)):0;return {pass:data.length>44100&&peak>=100&&rms>=10,bytes:data.length,peak,rms,seconds:data.length/frame/rate,sourceStartByte:start,sourceEndByte:end}}catch(e){let header=null,bytes=null;try{const raw=fs.readFileSync(nativePath);header=raw.subarray(0,64).toString('hex');bytes=raw.length}catch{}return {pass:false,error:String(e.message),sourceHeaderHex:header,sourceBytes:bytes,startMark:mark}}};
   const musicStart=markAudio();await pause(8000);report.nativeMusic=captureNative('native-music.wav',musicStart);
   await control('Turn music off');report.musicOff=await media();if(!report.musicOff.every(a=>a.paused))throw Error('Music toggle did not pause playback');
   await control('Turn music on');report.musicResumed=await media();if(!report.musicResumed.some(a=>!a.paused))throw Error('Music toggle did not resume');
@@ -110,6 +110,13 @@ async function attachWebView(report){
    await wait('Array.from(document.querySelectorAll("h2")).some(e=>e.textContent==="LEVEL COMPLETE")');item.completed=true;console.log('PASS native Android level '+level.id+' ('+actions.length+' actions)');capture('level-'+level.id+'-complete');
    if(level.id===1){report.nativeSfx=captureNative('native-sfx.wav',sfxStart);if(report.scope==='audio')break;}
    if(level.id<21){
+    if(level.id===1){
+     const reflection=await evaluate(`(()=>{const e=Array.from(document.querySelectorAll('button')).find(e=>e.textContent==='SEEK REFLECTION');if(!e)return null;const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`);
+     if(!reflection)throw Error('Reflection control missing');await touch(reflection);
+     await wait(`Array.from(document.querySelectorAll('button')).some(e=>e.textContent==='ASCEND')`);
+     report.reflectionText=await evaluate(`Array.from(document.querySelectorAll('p')).map(e=>e.textContent).find(t=>t.startsWith('"'))`);
+     if(!report.reflectionText||report.reflectionText.length<10)throw Error('Offline reflection text missing');
+    }
     const box=await evaluate(`(()=>{const buttons=Array.from(document.querySelectorAll('button')).filter(e=>/^(CONTINUE|ASCEND)/i.test(e.textContent.trim())&&e.getBoundingClientRect().width>0);if(buttons.length!==1)return null;const b=buttons[0].getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2}})()`);
     if(!box)throw Error('Next-level control not uniquely visible');await touch(box);if(level.id===1)await control('Turn music on');
    }
@@ -118,6 +125,12 @@ async function attachWebView(report){
   await browser.close();adb('shell','am','force-stop','com.joenasr.ascension');adb('shell','am','start','-W','-n','com.joenasr.ascension/.MainActivity');await pause(5000);browser=await attachWebView(report);
   const restored=report.scope==='audio'?1:21;await wait('window.__ASC_ANDROID_STATE?.().level==='+restored);report.lifecycle.push({check:'cold restart restores level '+restored,pass:true});
   const begin=await evaluate(`(()=>{const e=Array.from(document.querySelectorAll('button')).find(e=>e.textContent==='BEGIN JOURNEY');if(!e)return null;const b=e.getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2}})()`);if(!begin)throw Error('Cold restart start screen missing');await touch(begin);await pause(3000);capture('cold-restart-level'+restored);
+  if(report.scope==='full'){
+   adb('shell','wm','size','480x1040');await pause(3000);
+   const tall=await state();if(tall.level!==21||tall.height<=tall.width)throw Error('Tall portrait resize failed');
+   report.tallPortrait={width:tall.width,height:tall.height,level:tall.level};capture('portrait-tall-level21');
+   adb('shell','wm','size','480x854');await pause(2000);
+  }
   console.log('PASS: completed '+report.levels.length+' levels through native Android touch input ('+report.scope+')');
   if(!report.nativeMusic.pass||!report.nativeSfx.pass)throw Error('Native audio recording did not pass; gameplay completion is recorded separately');
  }catch(e){report.errors.push(String(e.stack||e));try{fs.writeFileSync('android-evidence/failure.png',execFileSync('adb',['exec-out','screencap','-p'],{timeout:45000}))}catch{}console.error(e);process.exitCode=1;}

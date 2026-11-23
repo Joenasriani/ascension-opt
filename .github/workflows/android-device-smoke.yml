@@ -63,6 +63,13 @@ jobs:
           pre-emulator-launch-script: sed -i 's/^hw.audioInput=.*/hw.audioInput=no/' "$ANDROID_AVD_HOME/test.avd/config.ini"
           emulator-options: -feature -VirtioSndCard -no-window -gpu swiftshader -no-snapshot -cores 2 -memory 3072 -no-boot-anim
           script: bash android/emulator-smoke.sh
+      - name: Preserve finalized native audio stream
+        if: always()
+        run: |
+          if [ -f /tmp/ascension-native-output.wav ]; then
+            mkdir -p android-evidence
+            cp /tmp/ascension-native-output.wav android-evidence/native-output-finalized.wav
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
