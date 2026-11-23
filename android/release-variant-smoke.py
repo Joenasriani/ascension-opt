@@ -6,7 +6,13 @@ out=Path('release-variant-evidence');out.mkdir(exist_ok=True)
 report={'variant':'release','qaCertificate':'temporary Android debug certificate; not the upload key','debuggerUsed':False,'nativeActions':[]}
 def adb(*args):return subprocess.check_output(['adb',*args],timeout=45)
 def capture(name):
- b=adb('exec-out','screencap','-p');assert b.startswith(b'\x89PNG\r\n\x1a\n');p=out/(name+'.png');p.write_bytes(b);return p
+ errors=[]
+ for attempt in range(3):
+  try:
+   b=adb('exec-out','screencap','-p');assert b.startswith(b'\x89PNG\r\n\x1a\n') and b.endswith(b'IEND\xaeB`\x82')
+   p=out/(name+'.png');p.write_bytes(b);return p
+  except Exception as e:errors.append(str(e));time.sleep(2)
+ raise RuntimeError('Native screenshot capture failed: '+str(errors))
 def text(p):return ' '.join(subprocess.check_output(['tesseract',str(p),'stdout','--psm','11'],stderr=subprocess.DEVNULL,timeout=30).decode().upper().split())
 def tap(x,y):adb('shell','input','tap',str(x),str(y));time.sleep(1.8)
 def audio(name,mark):
@@ -32,8 +38,8 @@ try:
  adb('shell','settings','put','secure','immersive_mode_confirmations','confirmed')
  adb('shell','am','start','-W','-n','com.joenasr.ascension/.MainActivity');time.sleep(20)
  pid=adb('shell','pidof','com.joenasr.ascension').decode().strip().split()[0]
- sockets=adb('shell','cat','/proc/net/unix').decode();assert '@webview_devtools_remote_'+pid not in sockets,'Release WebView unexpectedly exposes a debugger'
- report['releaseDebuggerDisabled']=True;capture('release-landing')
+ sockets=adb('shell','cat','/proc/net/unix').decode();report['releaseDebuggerDisabled']='@webview_devtools_remote_'+pid not in sockets
+ capture('release-landing')
  mark=raw.stat().st_size;tap(240,474);time.sleep(8);p=capture('release-level1')
  assert 'BROKEN' in text(p),'Native BEGIN did not reveal level 1'
  report['nativeMusic']=audio('release-native-music',mark)
@@ -49,6 +55,7 @@ try:
  adb('shell','am','force-stop','com.joenasr.ascension');adb('shell','am','start','-W','-n','com.joenasr.ascension/.MainActivity');time.sleep(6);tap(240,474);time.sleep(5)
  assert 'BROKEN' in text(capture('release-cold-restart')),'Release cold restart did not restore level 1';report['coldRestart']=True
  log=adb('logcat','-d').decode(errors='replace');(out/'logcat.txt').write_text(log);assert 'ANR in ' not in log and 'FATAL EXCEPTION' not in log,'Native release run contains ANR/fatal exception'
+ assert report['releaseDebuggerDisabled'],'Release WebView unexpectedly exposes a debugger'
  report['audioGate']='Reported separately: physical Android music and sound confirmed by user; emulator PCM remains diagnostic only'
  report['pass']=True;print('PASS: release variant startup, native level 1, resume and restart; original online HDR bundled; debugger disabled')
 except Exception as e:

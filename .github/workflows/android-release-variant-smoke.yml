@@ -77,7 +77,7 @@ jobs:
           ASCENSION_NATIVE_AUDIO_FORMAT: s16le
         with:
           api-level: ${{ matrix.api }}
-          target: default
+          target: google_apis
           arch: x86_64
           profile: pixel_2
           ram-size: 3072M
