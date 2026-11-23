@@ -12,6 +12,7 @@ collect_diagnostics() {
   run_adb logcat -d > android-evidence/logcat.txt 2>&1 || true
   run_adb shell dumpsys activity activities > android-evidence/activities.txt 2>&1 || true
   run_adb shell dumpsys meminfo com.joenasr.ascension > android-evidence/memory.txt 2>&1 || true
+  run_adb shell cat /proc/asound/cards > android-evidence/sound-cards.txt 2>&1 || true
   run_adb shell dumpsys audio > android-evidence/audio.txt 2>&1 || true
   run_adb shell dumpsys media.audio_flinger > android-evidence/audio-flinger.txt 2>&1 || true
   run_adb shell df -h > android-evidence/storage.txt 2>&1 || true
@@ -60,6 +61,8 @@ run_adb install -r android/app/build/outputs/apk/debug/app-debug.apk
 run_adb shell settings put secure immersive_mode_confirmations confirmed
 run_adb shell am start -W -n com.joenasr.ascension/.MainActivity
 sleep 20
+for n in {1..15}; do run_adb shell input keyevent KEYCODE_VOLUME_UP; done
+run_adb shell dumpsys audio > android-evidence/audio-before-game.txt
 capture landing
 # Coordinates refer to the explicit 480x854 portrait test viewport.
 run_adb shell input tap 240 474

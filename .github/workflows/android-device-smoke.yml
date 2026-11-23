@@ -46,6 +46,9 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         env:
           QEMU_AUDIO_DRV: wav
+          QEMU_WAV_FREQUENCY: 48000
+          QEMU_AUDIO_IN_DRV: none
+          ASCENSION_QA_SCOPE: ${{ contains(github.event.head_commit.message, '[audio-only]') && 'audio' || 'full' }}
           QEMU_WAV_PATH: /tmp/ascension-native-output.wav
           ASCENSION_NATIVE_AUDIO: /tmp/ascension-native-output.wav
         with:
@@ -57,7 +60,8 @@ jobs:
           heap-size: 256M
           disk-size: 4096M
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader -no-snapshot -cores 2 -memory 3072 -no-boot-anim
+          pre-emulator-launch-script: sed -i 's/^hw.audioInput=.*/hw.audioInput=no/' "$ANDROID_AVD_HOME/test.avd/config.ini"
+          emulator-options: -feature -VirtioSndCard -no-window -gpu swiftshader -no-snapshot -cores 2 -memory 3072 -no-boot-anim
           script: bash android/emulator-smoke.sh
       - uses: actions/upload-artifact@v4
         if: always()

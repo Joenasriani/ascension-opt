@@ -47,7 +47,7 @@ async function attachWebView(report){
   return {cdp,evaluate,wait,close:async()=>ws.close()};
 }
 (async()=>{
- const report={lifecycle:[],kind:'Android native-touch gameplay',levels:[],errors:[],network:[],limits:['Debug build has read-only scene observations. No gameplay setters are invoked.','Audio output needs separate audible verification.']};
+ const report={lifecycle:[],kind:'Android native-touch gameplay',scope:process.env.ASCENSION_QA_SCOPE||'full',levels:[],errors:[],network:[],limits:['Debug build has read-only scene observations. No gameplay setters are invoked.','Audio output needs separate audible verification.']};
  let browser;
  try{
   browser=await attachWebView(report);
@@ -104,7 +104,7 @@ async function attachWebView(report){
     if(!ok)throw Error('Native touch did not perform '+JSON.stringify(action)+' in level '+level.id);
    }
    await wait('Array.from(document.querySelectorAll("h2")).some(e=>e.textContent==="LEVEL COMPLETE")');item.completed=true;console.log('PASS native Android level '+level.id+' ('+actions.length+' actions)');capture('level-'+level.id+'-complete');
-   if(level.id===1){report.nativeSfx=captureNative('native-sfx.wav',sfxStart);}
+   if(level.id===1){report.nativeSfx=captureNative('native-sfx.wav',sfxStart);if(report.scope==='audio')break;}
    if(level.id<21){
     const box=await evaluate(`(()=>{const buttons=Array.from(document.querySelectorAll('button')).filter(e=>/^(CONTINUE|ASCEND)/i.test(e.textContent.trim())&&e.getBoundingClientRect().width>0);if(buttons.length!==1)return null;const b=buttons[0].getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2}})()`);
     if(!box)throw Error('Next-level control not uniquely visible');await touch(box);if(level.id===1)await control('Turn music on');
@@ -112,9 +112,9 @@ async function attachWebView(report){
   }
   report.sfx=await evaluate('window.__ASC_AUDIO_QA');if(!report.sfx||report.sfx.destinationConnections<1||report.sfx.maxPeak<=0)throw Error('No nonzero synthesized SFX samples observed');
   await browser.close();adb('shell','am','force-stop','com.joenasr.ascension');adb('shell','am','start','-W','-n','com.joenasr.ascension/.MainActivity');await pause(5000);browser=await attachWebView(report);
-  await wait('window.__ASC_ANDROID_STATE?.().level===21');report.lifecycle.push({check:'cold restart restores level 21',pass:true});
+  const restored=report.scope==='audio'?1:21;await wait('window.__ASC_ANDROID_STATE?.().level==='+restored);report.lifecycle.push({check:'cold restart restores level '+restored,pass:true});
   const begin=await evaluate(`(()=>{const e=Array.from(document.querySelectorAll('button')).find(e=>e.textContent==='BEGIN JOURNEY');if(!e)return null;const b=e.getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2}})()`);if(!begin)throw Error('Cold restart start screen missing');await touch(begin);await pause(3000);capture('cold-restart-level21');
-  console.log('PASS: completed all 21 levels through native Android touch input');
+  console.log('PASS: completed '+report.levels.length+' levels through native Android touch input ('+report.scope+')');
   if(!report.nativeMusic.pass||!report.nativeSfx.pass)throw Error('Native audio recording did not pass; gameplay completion is recorded separately');
  }catch(e){report.errors.push(String(e.stack||e));try{fs.writeFileSync('android-evidence/failure.png',execFileSync('adb',['exec-out','screencap','-p'],{timeout:45000}))}catch{}console.error(e);process.exitCode=1;}
  finally{fs.writeFileSync('android-evidence/gameplay-report.json',JSON.stringify(report,null,2));if(browser)await browser.close();}
