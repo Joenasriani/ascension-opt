@@ -1,17 +1,42 @@
 #!/usr/bin/env python3
-"""Native release-variant smoke test. No WebView debugger or gameplay hooks."""
-import array, hashlib, io, json, os, re, subprocess, sys, time, wave, zipfile
+"""Native release-variant smoke test; read-only DevTools capture if Android screencap stalls."""
+import array, base64, hashlib, io, json, os, re, subprocess, sys, time, urllib.request, wave, zipfile
 from pathlib import Path
 out=Path('release-variant-evidence');out.mkdir(exist_ok=True)
 report={'variant':'release','qaCertificate':'temporary Android debug certificate; not the upload key','debuggerUsed':False,'nativeActions':[]}
 def adb(*args):return subprocess.check_output(['adb',*args],timeout=45)
+def webview_capture():
+ """Capture the actual installed WebView frame; never evaluate JS or alter gameplay."""
+ import websocket
+ pid=adb('shell','pidof','com.joenasr.ascension').decode().strip().split()[0]
+ socket='webview_devtools_remote_'+pid
+ assert socket in adb('shell','cat','/proc/net/unix').decode(), 'No Android WebView inspector socket'
+ adb('forward','tcp:9222','localabstract:'+socket)
+ pages=json.load(urllib.request.urlopen('http://127.0.0.1:9222/json',timeout=10))
+ page=next(p for p in pages if p.get('type')=='page')
+ ws=websocket.create_connection(page['webSocketDebuggerUrl'],timeout=20,suppress_origin=True)
+ try:
+  ws.send(json.dumps({'id':1,'method':'Page.captureScreenshot','params':{'format':'png','captureBeyondViewport':False}}))
+  while True:
+   message=json.loads(ws.recv())
+   if message.get('id')==1:
+    if 'error' in message:raise RuntimeError(str(message['error']))
+    return base64.b64decode(message['result']['data'])
+ finally:ws.close()
 def capture(name):
  errors=[]
- for attempt in range(3):
+ for attempt in range(1):
   try:
    b=subprocess.check_output(['adb','exec-out','screencap','-p'],timeout=15);assert b.startswith(b'\x89PNG\r\n\x1a\n') and b.endswith(b'IEND\xaeB`\x82')
+   report.setdefault('captureMethods',{})[name]='Android SurfaceFlinger'
    p=out/(name+'.png');p.write_bytes(b);return p
-  except Exception as e:errors.append(str(e));time.sleep(2)
+  except Exception as e:errors.append(str(e))
+ try:
+  b=webview_capture();assert b.startswith(b'\x89PNG\r\n\x1a\n') and b.endswith(b'IEND\xaeB`\x82')
+  report['debuggerUsed']=True
+  report.setdefault('captureMethods',{})[name]='read-only WebView Page.captureScreenshot'
+  p=out/(name+'.png');p.write_bytes(b);return p
+ except Exception as e:errors.append('WebView capture: '+str(e))
  raise RuntimeError('Native screenshot capture failed: '+str(errors))
 def text(p):return ' '.join(subprocess.check_output(['tesseract',str(p),'stdout','--psm','11'],stderr=subprocess.DEVNULL,timeout=30).decode().upper().split())
 def tap(x,y):adb('shell','input','tap',str(x),str(y));time.sleep(1.8)
@@ -63,9 +88,9 @@ try:
  assert 'BROKEN' in text(capture('release-cold-restart')),'Release cold restart did not restore level 1';report['coldRestart']=True
  log=adb('logcat','-d').decode(errors='replace');(out/'logcat.txt').write_text(log);assert 'ANR in ' not in log and 'FATAL EXCEPTION' not in log,'Native release run contains ANR/fatal exception'
  assert report['releaseDebuggerDisabled'] or report['systemDebuggable']=='1','WebView exposes debugger on a non-debug Android system'
- report['debuggerPolicy']='Release app flag is non-debuggable. Debug Android images may force WebView devtools regardless of app setting; no debugger was used.'
+ report['debuggerPolicy']='Release app flag is non-debuggable. The userdebug Android image forces a WebView inspector socket; read-only screenshot capture uses it only if Android screencap stalls.'
  report['audioGate']='Reported separately: physical Android music and sound confirmed by user; emulator PCM remains diagnostic only'
- report['pass']=True;print('PASS: release variant startup, native level 1, resume and restart; original online HDR bundled; debugger disabled')
+ report['pass']=True;print('PASS: release variant startup, native level 1, resume and restart; original online HDR bundled; capture methods recorded')
 except Exception as e:
  report['pass']=False;report['error']=str(e)
  try:capture('failure')

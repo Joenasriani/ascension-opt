@@ -53,7 +53,7 @@ jobs:
       - name: Configure isolated native audio loopback
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y pulseaudio pulseaudio-utils xvfb libxcb-cursor0 tesseract-ocr
+          sudo apt-get install -y pulseaudio pulseaudio-utils xvfb libxcb-cursor0 tesseract-ocr python3-websocket
           pulseaudio --start --exit-idle-time=-1 --log-target=file:/tmp/ascension-pulse.log
           pactl load-module module-native-protocol-unix socket=/tmp/ascension-pulse.sock auth-anonymous=1
           pactl load-module module-null-sink sink_name=ascension_ci rate=48000 channels=2
