@@ -63,6 +63,18 @@ new='className:"absolute top-8 left-8 right-8 text-gray-700 pointer-events-none 
 bundle.write_text(bundle_source.replace(old,new,1))
 print('PASS: portrait hint width and dark-theme header contrast corrected')
 
+# Keep the required privacy policy discoverable from the landing screen, even
+# when the device is offline. The Play Console points to the same public policy.
+from shutil import copyfile
+copyfile(Path(__file__).resolve().parents[1] / 'privacy.html', index.parent / 'privacy.html')
+bundle_source=bundle.read_text()
+old='children:ee.jsx("p",{className:"text-[10px] text-black/20 uppercase tracking-[0.3em]",children:"V60 • React • Three.js"})})'
+assert bundle_source.count(old)==1, 'Unknown landing footer'
+new='children:ee.jsxs(ee.Fragment,{children:[ee.jsx("p",{className:"text-[10px] text-black/20 uppercase tracking-[0.3em]",children:"V60 • React • Three.js"}),ee.jsx("a",{href:"./privacy.html",style:{pointerEvents:"auto",display:"inline-flex",alignItems:"center",justifyContent:"center",minHeight:44,padding:"0 16px",fontSize:10,color:"#475569"},children:"Privacy policy"})]})})'
+bundle.write_text(bundle_source.replace(old,new,1))
+assert 'href:"./privacy.html"' in bundle.read_text()
+print('PASS: landing footer links to bundled offline privacy policy')
+
 bundle_source=bundle.read_text()
 for old,new in [
  ('className:"text-sm font-light mt-2 tracking-widest opacity-60",children:', 'className:"text-sm font-light mt-2 tracking-widest opacity-60",style:{opacity:1},children:'),
